@@ -54,7 +54,8 @@ try {
     $rules = [
         'flight_name' => 'min:3|max:255',
         'max_passengers' => 'integer|positive',
-        'fees' => 'numeric|positive'
+        'fees' => 'numeric|positive',
+        'status' => 'in:pending,completed,cancelled'
     ];
     
     if (!$validator->validate($data, $rules)) {
@@ -88,6 +89,11 @@ try {
         if (isset($data['fees'])) {
             $updates[] = "fees = ?";
             $params[] = floatval($data['fees']);
+        }
+        
+        if (isset($data['status'])) {
+            $updates[] = "status = ?";
+            $params[] = Validator::sanitize($data['status']);
         }
         
         // Update flights table
