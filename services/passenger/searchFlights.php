@@ -25,7 +25,12 @@ try {
     
     // Build query based on search parameters
     if ($from && $to) {
-        // Search for flights that have both cities in itinerary (from before to)
+        // Ensure from and to are different cities
+        if (strtolower($from) === strtolower($to)) {
+            jsonResponse(false, 'Departure and arrival cities cannot be the same', null, RESPONSE_BAD_REQUEST);
+        }
+        
+        // Search for flights where "from" city sequence is less than "to" city sequence (with partial matching)
         $query = "
             SELECT DISTINCT
                 f.id,
@@ -37,56 +42,89 @@ try {
                 f.status,
                 f.created_at,
                 u.name as company_name,
-                c.logo_path as company_logo,
                 (f.max_passengers - f.registered_passengers) as available_seats
             FROM flights f
             JOIN users u ON f.company_id = u.id
-            JOIN companies c ON u.id = c.user_id
             WHERE f.status = 'pending'
+            AND (f.max_passengers - f.registered_passengers) > 0
             AND f.id IN (
                 SELECT fi1.flight_id
                 FROM flight_itinerary fi1
                 JOIN flight_itinerary fi2 ON fi1.flight_id = fi2.flight_id
-                WHERE LOWER(fi1.city) LIKE LOWER(?)
-                AND LOWER(fi2.city) LIKE LOWER(?)
+                WHERE LOWER(fi1.city) LIKE LOWER(CONCAT('%', ?, '%'))
+                AND LOWER(fi2.city) LIKE LOWER(CONCAT('%', ?, '%'))
                 AND fi1.sequence_order < fi2.sequence_order
             )
-            AND (f.max_passengers - f.registered_passengers) > 0
             ORDER BY f.created_at DESC
         ";
         
         $stmt = $db->prepare($query);
-        $stmt->execute(["%{$from}%", "%{$to}%"]);
+        $stmt->execute([$from, $to]);
         
     } elseif ($from || $to) {
-        // Search for flights that have either city in itinerary
-        $searchCity = $from ?: $to;
-        
-        $query = "
-            SELECT DISTINCT
-                f.id,
-                f.flight_name,
-                f.flight_code,
-                f.max_passengers,
-                f.registered_passengers,
-                f.fees,
-                f.status,
-                f.created_at,
-                u.name as company_name,
-                c.logo_path as company_logo,
-                (f.max_passengers - f.registered_passengers) as available_seats
-            FROM flights f
-            JOIN users u ON f.company_id = u.id
-            JOIN companies c ON u.id = c.user_id
-            JOIN flight_itinerary fi ON f.id = fi.flight_id
-            WHERE f.status = 'pending'
-            AND LOWER(fi.city) LIKE LOWER(?)
-            AND (f.max_passengers - f.registered_passengers) > 0
-            ORDER BY f.created_at DESC
-        ";
-        
-        $stmt = $db->prepare($query);
-        $stmt->execute(["%{$searchCity}%"]);
+        if ($from) {
+            // Search for flights where "from" city is NOT the last city (can depart from it)
+            $query = "
+                SELECT DISTINCT
+                    f.id,
+                    f.flight_name,
+                    f.flight_code,
+                    f.max_passengers,
+                    f.registered_passengers,
+                    f.fees,
+                    f.status,
+                    f.created_at,
+                    u.name as company_name,
+                    (f.max_passengers - f.registered_passengers) as available_seats
+                FROM flights f
+                JOIN users u ON f.company_id = u.id
+                WHERE f.status = 'pending'
+                AND (f.max_passengers - f.registered_passengers) > 0
+                AND f.id IN (
+                    SELECT fi.flight_id
+                    FROM flight_itinerary fi
+                    WHERE LOWER(fi.city) LIKE LOWER(CONCAT('%', ?, '%'))
+                    AND fi.sequence_order < (
+                        SELECT MAX(sequence_order) 
+                        FROM flight_itinerary 
+                        WHERE flight_id = fi.flight_id
+                    )
+                )
+                ORDER BY f.created_at DESC
+            ";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute([$from]);
+        } else {
+            // Search for flights where "to" city is NOT the first city (can arrive to it)
+            $query = "
+                SELECT DISTINCT
+                    f.id,
+                    f.flight_name,
+                    f.flight_code,
+                    f.max_passengers,
+                    f.registered_passengers,
+                    f.fees,
+                    f.status,
+                    f.created_at,
+                    u.name as company_name,
+                    (f.max_passengers - f.registered_passengers) as available_seats
+                FROM flights f
+                JOIN users u ON f.company_id = u.id
+                WHERE f.status = 'pending'
+                AND (f.max_passengers - f.registered_passengers) > 0
+                AND f.id IN (
+                    SELECT fi.flight_id
+                    FROM flight_itinerary fi
+                    WHERE LOWER(fi.city) LIKE LOWER(CONCAT('%', ?, '%'))
+                    AND fi.sequence_order > 1
+                )
+                ORDER BY f.created_at DESC
+            ";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute([$to]);
+        }
         
     } else {
         // Return all available flights
@@ -101,11 +139,9 @@ try {
                 f.status,
                 f.created_at,
                 u.name as company_name,
-                c.logo_path as company_logo,
                 (f.max_passengers - f.registered_passengers) as available_seats
             FROM flights f
             JOIN users u ON f.company_id = u.id
-            JOIN companies c ON u.id = c.user_id
             WHERE f.status = 'pending'
             AND (f.max_passengers - f.registered_passengers) > 0
             ORDER BY f.created_at DESC
