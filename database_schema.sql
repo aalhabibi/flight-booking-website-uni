@@ -122,18 +122,6 @@ CREATE TABLE transactions (
     INDEX idx_type (transaction_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Sessions table (optional, for session management)
-CREATE TABLE sessions (
-    id VARCHAR(128) PRIMARY KEY,
-    user_id INT NOT NULL,
-    ip_address VARCHAR(45),
-    user_agent VARCHAR(255),
-    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    data TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_user (user_id),
-    INDEX idx_activity (last_activity)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -- Insert sample data for testing
 -- INSERT INTO users (user_type, email, username, password_hash, name, tel, account_balance) VALUES
