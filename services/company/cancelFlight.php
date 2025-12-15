@@ -36,7 +36,7 @@ try {
     
     try {
         // Get flight details
-        $stmt = $db->prepare("SELECT status, fees FROM flights WHERE id = ?");
+        $stmt = $db->prepare("SELECT company_id, status, fees FROM flights WHERE id = ?");
         $stmt->execute([$flightId]);
         $flight = $stmt->fetch();
         
@@ -65,6 +65,9 @@ try {
             if ($booking['payment_method'] === PAYMENT_ACCOUNT) {
                 // Add money back to passenger account
                 if (updateBalance($booking['passenger_id'], $booking['amount_paid'], 'add')) {
+                    // Subtract money from company account
+                    updateBalance($flight['company_id'], $booking['amount_paid'], 'subtract');
+                    
                     // Record refund transaction
                     recordTransaction(
                         $booking['passenger_id'],
@@ -94,10 +97,10 @@ try {
         ");
         $stmt->execute([$flightId]);
         
-        // Update passenger counts
+        // Update passenger count
         $stmt = $db->prepare("
             UPDATE flights 
-            SET registered_passengers = 0, pending_passengers = 0
+            SET registered_passengers = 0
             WHERE id = ?
         ");
         $stmt->execute([$flightId]);
