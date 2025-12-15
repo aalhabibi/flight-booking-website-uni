@@ -1,0 +1,5 @@
+# config/config.php
+
+uploads/passports/*
+uploads/logos/*
+uploads/photos/*
