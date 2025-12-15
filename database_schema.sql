@@ -96,18 +96,12 @@ CREATE TABLE messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
-    flight_id INT NULL,
     message TEXT NOT NULL,
-    message_type ENUM('flight_inquiry', 'booking', 'general') DEFAULT 'general',
-    is_read BOOLEAN DEFAULT FALSE,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (flight_id) REFERENCES flights(id) ON DELETE SET NULL,
     INDEX idx_sender (sender_id),
     INDEX idx_receiver (receiver_id),
-    INDEX idx_flight (flight_id),
-    INDEX idx_read (is_read)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Transactions table (for payment tracking)
@@ -141,13 +135,13 @@ CREATE TABLE sessions (
     INDEX idx_activity (last_activity)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insert sample data for testing
-INSERT INTO users (user_type, email, username, password_hash, name, tel, account_balance) VALUES
-('company', 'airline@example.com', 'skyair', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'SkyAir Airlines', '+1234567890', 50000.00),
-('passenger', 'john@example.com', 'johndoe', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '+9876543210', 1000.00);
+-- -- Insert sample data for testing
+-- INSERT INTO users (user_type, email, username, password_hash, name, tel, account_balance) VALUES
+-- ('company', 'airline@example.com', 'skyair', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'SkyAir Airlines', '+1234567890', 50000.00),
+-- ('passenger', 'john@example.com', 'johndoe', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '+9876543210', 1000.00);
 
-INSERT INTO companies (user_id, bio, address, location) VALUES
-(1, 'Leading airline providing excellent service worldwide', '123 Airport Road, New York, USA', 'New York, USA');
+-- INSERT INTO companies (user_id, bio, address, location) VALUES
+-- (1, 'Leading airline providing excellent service worldwide', '123 Airport Road, New York, USA', 'New York, USA');
 
 INSERT INTO passengers (user_id) VALUES
 (2);
