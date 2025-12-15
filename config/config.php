@@ -10,7 +10,8 @@ define('DB_CHARSET', 'utf8mb4');
 define('APP_NAME', 'Flight Booking System');
 define('BASE_URL', 'http://localhost/flight-booking');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
-define('MAX_FILE_SIZE', 5242880); // 5MB
+define('UPLOAD_URL', '/uploads/'); // URL path for frontend access
+define('MAX_FILE_SIZE', 10485760); // 10MB
 
 // Security
 define('SESSION_LIFETIME', 3600); // 1 hour

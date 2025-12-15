@@ -66,6 +66,21 @@ function uploadFile($file, $directory, $allowedTypes = ALLOWED_IMAGE_TYPES) {
     ];
 }
 
+// File Delete Helper
+function deleteFile($relativePath) {
+    if (empty($relativePath)) {
+        return false;
+    }
+    
+    $fullPath = UPLOAD_DIR . $relativePath;
+    
+    if (file_exists($fullPath) && is_file($fullPath)) {
+        return @unlink($fullPath);
+    }
+    
+    return false;
+}
+
 // Check balance and update
 function checkBalance($userId, $amount) {
     $db = getDB();
@@ -138,7 +153,22 @@ function getUserInfo($userId) {
         WHERE u.id = ?
     ");
     $stmt->execute([$userId]);
-    return $stmt->fetch();
+    $user = $stmt->fetch();
+    
+    // Add UPLOAD_URL prefix to file paths for frontend usage
+    if ($user) {
+        if (!empty($user['logo_path'])) {
+            $user['logo_url'] = UPLOAD_URL . $user['logo_path'];
+        }
+        if (!empty($user['photo_path'])) {
+            $user['photo_url'] = UPLOAD_URL . $user['photo_path'];
+        }
+        if (!empty($user['passport_img_path'])) {
+            $user['passport_url'] = UPLOAD_URL . $user['passport_img_path'];
+        }
+    }
+    
+    return $user;
 }
 
 function checkOwnership($userId, $resourceId, $resourceType) {

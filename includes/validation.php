@@ -181,8 +181,31 @@ class Validator {
             return ['valid' => false, 'errors' => $errors];
         }
         
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mimeType = $finfo->file($file['tmp_name']);
+        // Detect MIME type with graceful fallbacks if fileinfo is unavailable
+        $mimeType = null;
+        if (class_exists('finfo')) {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->file($file['tmp_name']);
+        } elseif (function_exists('mime_content_type')) {
+            $mimeType = mime_content_type($file['tmp_name']);
+        } else {
+            // Fallback based on file extension as a last resort
+            $ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+            $map = [
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'svg' => 'image/svg+xml',
+                'pdf' => 'application/pdf'
+            ];
+            $mimeType = $map[$ext] ?? null;
+        }
+        if (!$mimeType) {
+            $errors[] = "Unable to determine file type (enable fileinfo extension)";
+            return ['valid' => false, 'errors' => $errors];
+        }
         
         if (!in_array($mimeType, $allowedTypes)) {
             $errors[] = "Invalid file type";

@@ -101,7 +101,7 @@ CREATE TABLE messages (
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_sender (sender_id),
-    INDEX idx_receiver (receiver_id),
+    INDEX idx_receiver (receiver_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Transactions table (for payment tracking)
@@ -131,5 +131,5 @@ CREATE TABLE transactions (
 -- INSERT INTO companies (user_id, bio, address, location) VALUES
 -- (1, 'Leading airline providing excellent service worldwide', '123 Airport Road, New York, USA', 'New York, USA');
 
-INSERT INTO passengers (user_id) VALUES
-(2);
+-- INSERT INTO passengers (user_id) VALUES
+-- (2);
