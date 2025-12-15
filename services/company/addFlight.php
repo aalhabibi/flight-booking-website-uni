@@ -55,7 +55,7 @@ try {
         }
         
         // Validate datetime range
-        if (!validateDatetimeRange($stop['start_datetime'], $stop['end_datetime'])) {
+        if (!Validator::validateDatetimeRange($stop['start_datetime'], $stop['end_datetime'])) {
             jsonResponse(false, "Invalid datetime range for itinerary item {$index}", null, RESPONSE_BAD_REQUEST);
         }
         

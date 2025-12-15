@@ -191,4 +191,24 @@ class Validator {
         
         return ['valid' => true, 'mime_type' => $mimeType];
     }
+
+
+    public static function validateDatetimeRange(string $start, string $end): bool
+    {
+        $format = 'Y-m-d H:i:s';
+
+        $startDt = DateTime::createFromFormat($format, $start);
+        $endDt   = DateTime::createFromFormat($format, $end);
+
+        if (!$startDt || !$endDt) {
+            return false;
+        }
+
+        if ($startDt->format($format) !== $start || $endDt->format($format) !== $end) {
+            return false;
+        }
+
+        return $startDt < $endDt;
+    }
+
 }
