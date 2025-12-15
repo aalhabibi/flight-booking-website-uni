@@ -30,8 +30,3 @@ define('RESPONSE_FORBIDDEN', 403);
 define('RESPONSE_NOT_FOUND', 404);
 define('RESPONSE_CONFLICT', 409);
 define('RESPONSE_SERVER_ERROR', 500);
-
-// Message Types
-define('MESSAGE_TYPE_FLIGHT_INQUIRY', 'flight_inquiry');
-define('MESSAGE_TYPE_BOOKING', 'booking');
-define('MESSAGE_TYPE_GENERAL', 'general');

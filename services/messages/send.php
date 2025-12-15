@@ -23,8 +23,7 @@ try {
     $validator = new Validator();
     $rules = [
         'receiver_id' => 'required|integer|positive',
-        'message' => 'required|min:1|max:2000',
-        'message_type' => 'in:' . MESSAGE_TYPE_FLIGHT_INQUIRY . ',' . MESSAGE_TYPE_BOOKING . ',' . MESSAGE_TYPE_GENERAL
+        'message' => 'required|min:1|max:2000'
     ];
     
     if (!$validator->validate($data, $rules)) {
@@ -36,8 +35,6 @@ try {
     $senderId = Auth::getUserId();
     $receiverId = intval($data['receiver_id']);
     $message = Validator::sanitize($data['message']);
-    $messageType = $data['message_type'] ?? MESSAGE_TYPE_GENERAL;
-    $flightId = isset($data['flight_id']) ? intval($data['flight_id']) : null;
     
     // Check if receiver exists
     $db = getDB();
@@ -49,33 +46,26 @@ try {
         jsonResponse(false, 'Receiver not found', null, RESPONSE_NOT_FOUND);
     }
     
-    // Validate sender and receiver are different user types
+    // Prevent self-messaging and enforce cross-type (company <-> passenger only)
+    if ($receiverId === $senderId) {
+        jsonResponse(false, 'You cannot message yourself', null, RESPONSE_BAD_REQUEST);
+    }
+
     $senderType = Auth::getUserType();
     if ($senderType === $receiver['user_type']) {
         jsonResponse(false, 'Messages can only be sent between companies and passengers', null, RESPONSE_BAD_REQUEST);
     }
     
-    // If flight_id provided, validate it exists
-    if ($flightId) {
-        $stmt = $db->prepare("SELECT id FROM flights WHERE id = ?");
-        $stmt->execute([$flightId]);
-        if (!$stmt->fetch()) {
-            jsonResponse(false, 'Flight not found', null, RESPONSE_NOT_FOUND);
-        }
-    }
-    
     // Insert message
     $stmt = $db->prepare("
-        INSERT INTO messages (sender_id, receiver_id, flight_id, message, message_type)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO messages (sender_id, receiver_id, message)
+        VALUES (?, ?, ?)
     ");
     
     $stmt->execute([
         $senderId,
         $receiverId,
-        $flightId,
-        $message,
-        $messageType
+        $message
     ]);
     
     $messageId = $db->lastInsertId();

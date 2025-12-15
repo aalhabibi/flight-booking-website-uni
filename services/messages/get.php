@@ -29,21 +29,10 @@ try {
                 m.id,
                 m.sender_id,
                 m.receiver_id,
-                m.flight_id,
                 m.message,
-                m.message_type,
                 m.is_read,
-                m.sent_at,
-                sender.name as sender_name,
-                sender.user_type as sender_type,
-                receiver.name as receiver_name,
-                receiver.user_type as receiver_type,
-                f.flight_code,
-                f.flight_name
+                m.sent_at
             FROM messages m
-            JOIN users sender ON m.sender_id = sender.id
-            JOIN users receiver ON m.receiver_id = receiver.id
-            LEFT JOIN flights f ON m.flight_id = f.id
             WHERE (m.sender_id = ? AND m.receiver_id = ?)
                OR (m.sender_id = ? AND m.receiver_id = ?)
             ORDER BY m.sent_at ASC
@@ -66,7 +55,7 @@ try {
         ]);
         
     } else {
-        // Get all conversations (grouped by user)
+        // Get all conversations (list of users with last message)
         $stmt = $db->prepare("
             SELECT DISTINCT
                 CASE 
@@ -75,7 +64,6 @@ try {
                 END as other_user_id,
                 u.name as other_user_name,
                 u.user_type as other_user_type,
-                u.email as other_user_email,
                 (SELECT message FROM messages 
                  WHERE (sender_id = ? AND receiver_id = other_user_id)
                     OR (sender_id = other_user_id AND receiver_id = ?)
@@ -83,9 +71,7 @@ try {
                 (SELECT sent_at FROM messages 
                  WHERE (sender_id = ? AND receiver_id = other_user_id)
                     OR (sender_id = other_user_id AND receiver_id = ?)
-                 ORDER BY sent_at DESC LIMIT 1) as last_message_time,
-                (SELECT COUNT(*) FROM messages 
-                 WHERE receiver_id = ? AND sender_id = other_user_id AND is_read = FALSE) as unread_count
+                 ORDER BY sent_at DESC LIMIT 1) as last_message_time
             FROM messages m
             JOIN users u ON (
                 CASE 
@@ -99,38 +85,13 @@ try {
         
         $stmt->execute([
             $userId, $userId, $userId, $userId, $userId, 
-            $userId, $userId, $userId, $userId
+            $userId, $userId, $userId
         ]);
         $conversations = $stmt->fetchAll();
         
-        // Get company logo or passenger photo for each conversation
-        foreach ($conversations as &$conv) {
-            if ($conv['other_user_type'] === USER_TYPE_COMPANY) {
-                $stmt = $db->prepare("SELECT logo_path FROM companies WHERE user_id = ?");
-                $stmt->execute([$conv['other_user_id']]);
-                $result = $stmt->fetch();
-                $conv['other_user_image'] = $result ? $result['logo_path'] : null;
-            } else {
-                $stmt = $db->prepare("SELECT photo_path FROM passengers WHERE user_id = ?");
-                $stmt->execute([$conv['other_user_id']]);
-                $result = $stmt->fetch();
-                $conv['other_user_image'] = $result ? $result['photo_path'] : null;
-            }
-        }
-        
-        // Get total unread count
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as total_unread
-            FROM messages
-            WHERE receiver_id = ? AND is_read = FALSE
-        ");
-        $stmt->execute([$userId]);
-        $unreadData = $stmt->fetch();
-        
         jsonResponse(true, 'Conversations retrieved successfully', [
             'conversations' => $conversations,
-            'total_conversations' => count($conversations),
-            'total_unread' => $unreadData['total_unread']
+            'total_conversations' => count($conversations)
         ]);
     }
     
