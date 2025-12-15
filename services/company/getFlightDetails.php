@@ -59,30 +59,7 @@ try {
     $stmt->execute([$flightId]);
     $flight['itinerary'] = $stmt->fetchAll();
     
-    // Get pending passengers
-    $stmt = $db->prepare("
-        SELECT 
-            b.id as booking_id,
-            b.booking_status,
-            b.payment_method,
-            b.amount_paid,
-            b.booking_date,
-            u.id as passenger_id,
-            u.name,
-            u.email,
-            u.tel,
-            p.photo_path,
-            p.passport_img_path
-        FROM bookings b
-        JOIN users u ON b.passenger_id = u.id
-        JOIN passengers p ON u.id = p.user_id
-        WHERE b.flight_id = ? AND b.booking_status = 'pending'
-        ORDER BY b.booking_date DESC
-    ");
-    $stmt->execute([$flightId]);
-    $flight['pending_passengers'] = $stmt->fetchAll();
-    
-    // Get registered (confirmed) passengers
+    // Get registered (confirmed) bookings
     $stmt = $db->prepare("
         SELECT 
             b.id as booking_id,
@@ -108,8 +85,7 @@ try {
     
     // Calculate statistics
     $flight['statistics'] = [
-        'total_bookings' => count($flight['pending_passengers']) + count($flight['registered_passengers']),
-        'pending_count' => count($flight['pending_passengers']),
+        'total_bookings' => count($flight['registered_passengers']),
         'confirmed_count' => count($flight['registered_passengers']),
         'available_seats' => $flight['max_passengers'] - count($flight['registered_passengers']),
         'revenue' => $flight['fees'] * count($flight['registered_passengers'])

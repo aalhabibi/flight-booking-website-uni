@@ -61,8 +61,8 @@ try {
             jsonResponse(false, 'Already booked this flight', null, 409);
         }
         
-        $bookingStatus = BOOKING_STATUS_PENDING;
         $amountPaid = $flight['fees'];
+        $bookingStatus = BOOKING_STATUS_CONFIRMED;
         
         if ($paymentMethod === PAYMENT_ACCOUNT) {
             if (!checkBalance($passengerId, $amountPaid)) {
@@ -71,8 +71,6 @@ try {
             
             updateBalance($passengerId, $amountPaid, 'subtract');
             updateBalance($flight['company_id'], $amountPaid, 'add');
-            
-            $bookingStatus = BOOKING_STATUS_CONFIRMED;
         }
         
         $stmt = $db->prepare("
@@ -87,16 +85,11 @@ try {
             recordTransaction($flight['company_id'], $bookingId, 'deposit', $amountPaid, "Flight {$flight['flight_code']}");
         }
         
-        if ($bookingStatus === BOOKING_STATUS_CONFIRMED) {
-            $stmt = $db->prepare("UPDATE flights SET registered_passengers = registered_passengers + 1 WHERE id = ?");
-            $stmt->execute([$flightId]);
-            
-            $stmt = $db->prepare("UPDATE bookings SET confirmation_date = NOW() WHERE id = ?");
-            $stmt->execute([$bookingId]);
-        } else {
-            $stmt = $db->prepare("UPDATE flights SET pending_passengers = pending_passengers + 1 WHERE id = ?");
-            $stmt->execute([$flightId]);
-        }
+        $stmt = $db->prepare("UPDATE flights SET registered_passengers = registered_passengers + 1 WHERE id = ?");
+        $stmt->execute([$flightId]);
+        
+        $stmt = $db->prepare("UPDATE bookings SET confirmation_date = NOW() WHERE id = ?");
+        $stmt->execute([$bookingId]);
         
         $db->commit();
         
@@ -104,9 +97,7 @@ try {
             'booking_id' => $bookingId,
             'booking_status' => $bookingStatus,
             'payment_method' => $paymentMethod,
-            'message' => $paymentMethod === PAYMENT_CASH 
-                ? 'Contact company to complete payment'
-                : 'Booking confirmed'
+            'message' => 'Booking confirmed'
         ], 201);
         
     } catch (Exception $e) {

@@ -61,6 +61,15 @@ try {
             $params[] = Auth::hashPassword($data['password']);
         }
         
+        // Update account balance (passengers only) - ADD to existing balance
+        if ($userType === USER_TYPE_PASSENGER && isset($data['account_balance'])) {
+            if (!is_numeric($data['account_balance']) || $data['account_balance'] < 0) {
+                jsonResponse(false, 'Account balance must be a positive number', null, RESPONSE_BAD_REQUEST);
+            }
+            $updates[] = "account_balance = account_balance + ?";
+            $params[] = floatval($data['account_balance']);
+        }
+        
         // Update users table
         if (!empty($updates)) {
             $params[] = $userId;

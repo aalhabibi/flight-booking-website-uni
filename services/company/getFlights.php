@@ -28,13 +28,11 @@ try {
             f.flight_code,
             f.max_passengers,
             f.registered_passengers,
-            f.pending_passengers,
             f.fees,
             f.status,
             f.created_at,
             f.updated_at,
-            (SELECT COUNT(*) FROM bookings WHERE flight_id = f.id AND booking_status = 'confirmed') as confirmed_bookings,
-            (SELECT COUNT(*) FROM bookings WHERE flight_id = f.id AND booking_status = 'pending') as pending_bookings
+            (SELECT COUNT(*) FROM bookings WHERE flight_id = f.id AND booking_status = 'confirmed') as confirmed_bookings
         FROM flights f
         WHERE f.company_id = ?
         ORDER BY f.created_at DESC

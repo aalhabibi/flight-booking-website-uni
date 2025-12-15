@@ -1,7 +1,7 @@
 -- Flight Booking System Database Schema
 
-CREATE DATABASE IF NOT EXISTS flight_booking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE flight_booking;
+CREATE DATABASE IF NOT EXISTS flight_booking_uni CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE flight_booking_uni;
 
 -- Users table (both companies and passengers)
 CREATE TABLE users (
@@ -50,7 +50,6 @@ CREATE TABLE flights (
     flight_code VARCHAR(50) UNIQUE NOT NULL,
     max_passengers INT NOT NULL,
     registered_passengers INT DEFAULT 0,
-    pending_passengers INT DEFAULT 0,
     fees DECIMAL(10, 2) NOT NULL,
     status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -78,7 +77,7 @@ CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     flight_id INT NOT NULL,
     passenger_id INT NOT NULL,
-    booking_status ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending',
+    booking_status ENUM('confirmed', 'cancelled') DEFAULT 'confirmed',
     payment_method ENUM('account', 'cash') NOT NULL,
     amount_paid DECIMAL(10, 2) NOT NULL,
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
