@@ -1,9 +1,9 @@
 <?php
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'flight_booking');
+define('DB_NAME', 'flight_booking_uni');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', '123456');
 define('DB_CHARSET', 'utf8mb4');
 
 // Application Configuration
@@ -15,12 +15,6 @@ define('MAX_FILE_SIZE', 5242880); // 5MB
 // Security
 define('SESSION_LIFETIME', 3600); // 1 hour
 define('PASSWORD_MIN_LENGTH', 8);
-
-// Email Configuration (for future use)
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USER', 'your-email@gmail.com');
-define('SMTP_PASS', 'your-password');
 
 // Timezone
 date_default_timezone_set('UTC');
