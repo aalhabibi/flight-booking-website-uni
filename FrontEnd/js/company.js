@@ -239,12 +239,12 @@ function createFlightDetailsHTML(flight) {
             </div>
             <div class="summary-row">
                 <span>Registered:</span>
-                <span>${flight.registered_passengers}</span>
+                <span>${flight.registered_passengers.length}</span>
             </div>
             <div class="summary-row">
                 <span>Available:</span>
                 <span>${
-                  flight.max_passengers - flight.registered_passengers
+                  flight.max_passengers - flight.registered_passengers.length
                 }</span>
             </div>
             <div class="summary-row">
@@ -256,7 +256,7 @@ function createFlightDetailsHTML(flight) {
             <div class="summary-row">
                 <span>Total Revenue:</span>
                 <span>${Utils.formatCurrency(
-                  flight.registered_passengers * flight.fees
+                  flight.registered_passengers.length * flight.fees
                 )}</span>
             </div>
         </div>
@@ -381,7 +381,7 @@ function createBookingCard(flight, booking) {
             <div class="booking-info">
                 <div class="info-item">
                     <span class="info-label">Passenger</span>
-                    <span class="info-value">${booking.passenger_name}</span>
+                    <span class="info-value">${booking.name}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Booking Date</span>

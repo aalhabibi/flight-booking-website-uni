@@ -26,7 +26,7 @@ try {
     $companyId = Auth::getUserId();
     $db = getDB();
     
-    // Get all flights for this company
+    // Get all flights for this company (no join to avoid duplicates)
     $stmt = $db->prepare("
         SELECT 
             f.id,
@@ -46,6 +46,49 @@ try {
     
     $stmt->execute([$companyId]);
     $flights = $stmt->fetchAll();
+
+    if (empty($flights)) {
+        jsonResponse(true, 'Flights retrieved successfully', [
+            'flights' => [],
+            'total' => 0
+        ]);
+    }
+
+    // Fetch all bookings for these flights in one query
+    $flightIds = array_column($flights, 'id');
+    $placeholders = implode(',', array_fill(0, count($flightIds), '?'));
+    $bookingsByFlight = [];
+
+    if (!empty($flightIds)) {
+        $stmt = $db->prepare("
+            SELECT 
+                b.id AS booking_id,
+                b.flight_id,
+                b.booking_status,
+                b.payment_method,
+                b.amount_paid,
+                b.booking_date,
+                b.confirmation_date,
+                u.id AS passenger_id,
+                u.name,
+                u.email,
+                u.tel
+            FROM bookings b
+            JOIN users u ON b.passenger_id = u.id
+            WHERE b.flight_id IN ($placeholders)
+            ORDER BY b.booking_date DESC
+        ");
+        $stmt->execute($flightIds);
+        $bookings = $stmt->fetchAll();
+
+        foreach ($bookings as $booking) {
+            $flightId = $booking['flight_id'];
+            if (!isset($bookingsByFlight[$flightId])) {
+                $bookingsByFlight[$flightId] = [];
+            }
+            $bookingsByFlight[$flightId][] = $booking;
+        }
+    }
     
     // Get itinerary for each flight
     foreach ($flights as &$flight) {
@@ -61,6 +104,26 @@ try {
         // Add formatted itinerary string
         $cities = array_column($flight['itinerary'], 'city');
         $flight['itinerary_string'] = implode(' → ', $cities);
+
+        // Attach bookings and stats
+        $flightBookings = $bookingsByFlight[$flight['id']] ?? [];
+        $flight['bookings'] = $flightBookings;
+
+        $confirmedCount = 0;
+        foreach ($flightBookings as $booking) {
+            if ($booking['booking_status'] === 'confirmed') {
+                $confirmedCount++;
+            }
+        }
+
+        // Keep registered_passengers as a count for UI compatibility
+        $flight['registered_passengers'] = $confirmedCount;
+        $flight['statistics'] = [
+            'total_bookings' => count($flightBookings),
+            'confirmed_count' => $confirmedCount,
+            'available_seats' => $flight['max_passengers'] - $confirmedCount,
+            'revenue' => $flight['fees'] * $confirmedCount
+        ];
     }
     
     jsonResponse(true, 'Flights retrieved successfully', [

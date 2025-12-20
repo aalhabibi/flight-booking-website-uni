@@ -3,7 +3,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'flight_booking_uni');
 define('DB_USER', 'root');
-define('DB_PASS', '');  // XAMPP default is empty password
+define('DB_PASS', '123456');
 define('DB_CHARSET', 'utf8mb4');
 
 // Application Configuration
@@ -19,10 +19,6 @@ define('PASSWORD_MIN_LENGTH', 8);
 
 // Timezone
 date_default_timezone_set('UTC');
-
-// Error Reporting (set to 0 in production)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Session Configuration
 ini_set('session.cookie_httponly', 1);
