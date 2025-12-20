@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Flight Booking System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join our flight booking system</p>
+            
+            <div id="alert-container"></div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" required minlength="3">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="name">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-input" required minlength="2">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="tel">Phone Number</label>
+                    <input type="tel" id="tel" name="tel" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required minlength="8">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Account Type</label>
+                    <div class="form-radio-group">
+                        <div class="form-radio">
+                            <input type="radio" id="type_company" name="user_type" value="company" required>
+                            <label for="type_company">Company</label>
+                        </div>
+                        <div class="form-radio">
+                            <input type="radio" id="type_passenger" name="user_type" value="passenger" required>
+                            <label for="type_passenger">Passenger</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Register</button>
+            </form>
+            
+            <div class="auth-link">
+                Already have an account? <a href="login.html">Login here</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Info Modal -->
+    <div id="additionalInfoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Additional Information</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="additionalInfoForm">
+                    <div id="companyFields" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="bio">Bio</label>
+                            <textarea id="bio" name="bio" class="form-textarea" rows="4" placeholder="Tell us about your company..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="address">Address</label>
+                            <textarea id="address" name="address" class="form-textarea" rows="3" placeholder="Company address..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="location">Location</label>
+                            <input type="text" id="location" name="location" class="form-input" placeholder="City, Country">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="logo">Company Logo</label>
+                            <input type="file" id="logo" name="logo" class="form-input" accept="image/*">
+                        </div>
+                    </div>
+                    
+                    <div id="passengerFields" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="photo">Photo</label>
+                            <input type="file" id="photo" name="photo" class="form-input" accept="image/*">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="passport_img">Passport Image</label>
+                            <input type="file" id="passport_img" name="passport_img" class="form-input" accept="image/*,application/pdf">
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="skipBtn">Skip</button>
+                        <button type="submit" class="btn btn-primary">Complete Registration</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let registrationData = {};
+        
+        $('#registerForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                email: $('#email').val(),
+                username: $('#username').val(),
+                name: $('#name').val(),
+                tel: $('#tel').val(),
+                password: $('#password').val(),
+                user_type: $('input[name="user_type"]:checked').val()
+            };
+            
+            // Validate
+            if (!formData.user_type) {
+                showAlert('Please select an account type', 'error');
+                return;
+            }
+            
+            // Store registration data
+            registrationData = formData;
+            
+            // Show additional info modal
+            if (formData.user_type === 'company') {
+                $('#companyFields').show();
+                $('#passengerFields').hide();
+            } else {
+                $('#companyFields').hide();
+                $('#passengerFields').show();
+            }
+            
+            $('#additionalInfoModal').addClass('active');
+        });
+        
+        $('#additionalInfoForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const userType = registrationData.user_type;
+            const additionalData = {};
+            
+            if (userType === 'company') {
+                additionalData.bio = $('#bio').val();
+                additionalData.address = $('#address').val();
+                additionalData.location = $('#location').val();
+                additionalData.logo = $('#logo')[0];
+            } else {
+                additionalData.photo = $('#photo')[0];
+                additionalData.passport_img = $('#passport_img')[0];
+            }
+            
+            // Show loading
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Registering...');
+            
+            register(registrationData, additionalData)
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('Registration successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            if (response.data.user_type === 'company') {
+                                window.location.href = 'company-home.html';
+                            } else {
+                                window.location.href = 'passenger-home.html';
+                            }
+                        }, 1500);
+                    } else {
+                        showAlert(response.message || 'Registration failed', 'error');
+                        submitBtn.prop('disabled', false).text(originalText);
+                    }
+                })
+                .fail(function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    showAlert(response.message || 'An error occurred', 'error');
+                    submitBtn.prop('disabled', false).text(originalText);
+                });
+        });
+        
+        $('#skipBtn').on('click', function() {
+            const submitBtn = $('#additionalInfoForm').find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Registering...');
+            
+            register(registrationData, null)
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('Registration successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            if (response.data.user_type === 'company') {
+                                window.location.href = 'company-home.html';
+                            } else {
+                                window.location.href = 'passenger-home.html';
+                            }
+                        }, 1500);
+                    } else {
+                        showAlert(response.message || 'Registration failed', 'error');
+                        submitBtn.prop('disabled', false).text(originalText);
+                    }
+                })
+                .fail(function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    showAlert(response.message || 'An error occurred', 'error');
+                    submitBtn.prop('disabled', false).text(originalText);
+                });
+        });
+    </script>
+</body>
+</html>
+

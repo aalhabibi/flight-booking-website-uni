@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Flight Booking System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Login to your account</p>
+            
+            <div id="alert-container"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Login</button>
+            </form>
+            
+            <div class="auth-link">
+                Don't have an account? <a href="register.html">Register here</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const email = $('#email').val();
+            const password = $('#password').val();
+            
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Logging in...');
+            
+            login(email, password)
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('Login successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            if (response.data.user_type === 'company') {
+                                window.location.href = 'company-home.html';
+                            } else {
+                                window.location.href = 'passenger-home.html';
+                            }
+                        }, 1000);
+                    } else {
+                        showAlert(response.message || 'Login failed', 'error');
+                        submitBtn.prop('disabled', false).text(originalText);
+                    }
+                })
+                .fail(function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    showAlert(response.message || 'Invalid email or password', 'error');
+                    submitBtn.prop('disabled', false).text(originalText);
+                });
+        });
+    </script>
+</body>
+</html>
+
