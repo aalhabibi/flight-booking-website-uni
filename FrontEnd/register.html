@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SkyBooker</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+</head>
+
+<body class="auth-page">
+    <!-- Navigation -->
+    <nav class="navbar navbar-simple">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="index.html">
+                    <img src="images/logo.svg" alt="SkyBooker Logo" class="navbar-logo">
+                </a>
+            </div>
+            <a href="index.html" class="btn-back">← Back to Home</a>
+        </div>
+    </nav>
+
+    <!-- Register Form -->
+    <div class="auth-container">
+        <div class="auth-card auth-card-wide">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join SkyBooker today</p>
+            </div>
+
+            <!-- User Type Selection -->
+            <div class="user-type-selector">
+                <button type="button" class="type-btn active" data-type="passenger">
+                    <i class="icon-user"></i>
+                    <span>Passenger</span>
+                </button>
+                <button type="button" class="type-btn" data-type="company">
+                    <i class="icon-company"></i>
+                    <span>Airline Company</span>
+                </button>
+            </div>
+
+            <div id="error-message" class="alert alert-error" style="display: none;"></div>
+            <div id="success-message" class="alert alert-success" style="display: none;"></div>
+
+            <form id="registerForm" class="auth-form" enctype="multipart/form-data">
+                <input type="hidden" id="user_type" name="user_type" value="passenger">
+
+                <!-- Common Fields -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" class="form-control" required
+                            placeholder="Enter your full name">
+                        <span class="error-text" id="name-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username <span class="required">*</span></label>
+                        <input type="text" id="username" name="username" class="form-control" required
+                            placeholder="Choose a username">
+                        <span class="error-text" id="username-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" class="form-control" required
+                            placeholder="Enter your email">
+                        <span class="error-text" id="email-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tel">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="tel" name="tel" class="form-control" required
+                            placeholder="Enter your phone number">
+                        <span class="error-text" id="tel-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password <span class="required">*</span></label>
+                        <input type="password" id="password" name="password" class="form-control" required
+                            placeholder="Create a password (min 8 characters)">
+                        <span class="error-text" id="password-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password <span class="required">*</span></label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                            required placeholder="Confirm your password">
+                        <span class="error-text" id="confirm_password-error"></span>
+                    </div>
+                </div>
+
+                <!-- Passenger Specific Fields -->
+                <div id="passengerFields" class="conditional-fields">
+                    <h3 class="section-title">Passenger Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="photo">Profile Photo</label>
+                            <input type="file" id="photo" name="photo" class="form-control-file" accept="image/*">
+                            <span class="help-text">Upload your profile photo (Optional)</span>
+                            <span class="error-text" id="photo-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="passport_img">Passport Image</label>
+                            <input type="file" id="passport_img" name="passport_img" class="form-control-file"
+                                accept="image/*">
+                            <span class="help-text">Upload your passport image (Optional)</span>
+                            <span class="error-text" id="passport_img-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Specific Fields -->
+                <div id="companyFields" class="conditional-fields" style="display: none;">
+                    <h3 class="section-title">Company Information</h3>
+
+                    <div class="form-group">
+                        <label for="bio">Company Bio</label>
+                        <textarea id="bio" name="bio" class="form-control" rows="3"
+                            placeholder="Tell us about your airline company"></textarea>
+                        <span class="error-text" id="bio-error"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" class="form-control"
+                                placeholder="Company address">
+                            <span class="error-text" id="address-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" class="form-control"
+                                placeholder="City, Country">
+                            <span class="error-text" id="location-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="logo">Company Logo</label>
+                        <input type="file" id="logo" name="logo" class="form-control-file" accept="image/*">
+                        <span class="help-text">Upload your company logo (Optional)</span>
+                        <span class="error-text" id="logo-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <span>I agree to the Terms of Service and Privacy Policy <span class="required">*</span></span>
+                    </label>
+                    <span class="error-text" id="terms-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-loading" id="registerBtn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="icon-spinner"></i> Creating account...
+                    </span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="planeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00b4d8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0066cc;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Airplane Icon -->
+  <g transform="translate(10, 30)">
+    <!-- Plane body -->
+    <path d="M 50 30 L 10 40 L 5 38 L 40 25 L 38 15 L 35 15 L 20 25 L 15 23 L 25 10 L 30 5 L 52 20 L 70 15 L 72 17 L 60 25 L 52 30 Z" 
+          fill="url(#planeGradient)" 
+          stroke="#ffffff" 
+          stroke-width="1.5"
+          filter="url(#glow)"/>
+    <!-- Trail effect -->
+    <circle cx="5" cy="38" r="2" fill="#00b4d8" opacity="0.8"/>
+    <circle cx="0" cy="36" r="1.5" fill="#ffffff" opacity="0.6"/>
+    <circle cx="12" cy="23" r="2" fill="#00b4d8" opacity="0.8"/>
+    <circle cx="8" cy="21" r="1.5" fill="#ffffff" opacity="0.6"/>
+  </g>
+  
+  <!-- Text "SkyBooker" -->
+  <text x="95" y="70" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="900" fill="#ffffff" letter-spacing="-1" filter="url(#glow)">
+    SkyBooker
+  </text>
+  
+  <!-- Tagline -->
+  <text x="97" y="90" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="600" fill="#e0f2fe" letter-spacing="2">
+    FLY WITH CONFIDENCE
+  </text>
+</svg>
