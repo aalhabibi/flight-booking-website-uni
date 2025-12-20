@@ -120,6 +120,8 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+            // Enable debug logging for registration flow
+            window.DEBUG_REGISTRATION = true;
         let registrationData = {};
         
         $('#registerForm').on('submit', function(e) {
@@ -161,14 +163,14 @@
             const userType = registrationData.user_type;
             const additionalData = {};
             
-            if (userType === 'company') {
-                additionalData.bio = $('#bio').val();
-                additionalData.address = $('#address').val();
-                additionalData.location = $('#location').val();
-                additionalData.logo = $('#logo')[0];
-            } else {
-                additionalData.photo = $('#photo')[0];
-                additionalData.passport_img = $('#passport_img')[0];
+                if (userType === 'company') {
+                    additionalData.bio = $('#bio').val();
+                    additionalData.address = $('#address').val();
+                    additionalData.location = $('#location').val();
+                    additionalData.logo = document.getElementById('logo');
+                } else {
+                    additionalData.photo = document.getElementById('photo');
+                    additionalData.passport_img = document.getElementById('passport_img');
             }
             
             // Show loading
@@ -176,15 +178,41 @@
             const originalText = submitBtn.text();
             submitBtn.prop('disabled', true).text('Registering...');
             
-            register(registrationData, additionalData)
+                console.log('Submitting registration with additional files:', additionalData);
+                register(registrationData, additionalData)
                 .done(function(response) {
+                        console.log('Register response:', response);
                     if (response.success) {
                         showAlert('Registration successful! Redirecting...', 'success');
                         setTimeout(() => {
-                            if (response.data.user_type === 'company') {
-                                window.location.href = 'company-home.html';
+                            const redirectByType = (type) => {
+                                if (type === 'company') {
+                                    window.location.href = 'company-home.html';
+                                } else {
+                                    window.location.href = 'passenger-home.html';
+                                }
+                            };
+
+                            if (response.data && response.data.user_type) {
+                                redirectByType(response.data.user_type);
+                            } else if (registrationData && registrationData.user_type) {
+                                // Use client-side selection as a reliable fallback
+                                redirectByType(registrationData.user_type);
                             } else {
-                                window.location.href = 'passenger-home.html';
+                                // Last resort: fetch profile and decide
+                                getProfile()
+                                    .done(function(profileResp) {
+                                        console.log('Profile response (fallback):', profileResp);
+                                        if (profileResp.success && profileResp.data && profileResp.data.user_type) {
+                                            redirectByType(profileResp.data.user_type);
+                                        } else {
+                                            window.location.href = 'index.html';
+                                        }
+                                    })
+                                    .fail(function(xhr) {
+                                        console.error('Profile fetch failed:', xhr);
+                                        window.location.href = 'index.html';
+                                    });
                             }
                         }, 1500);
                     } else {
@@ -209,10 +237,29 @@
                     if (response.success) {
                         showAlert('Registration successful! Redirecting...', 'success');
                         setTimeout(() => {
-                            if (response.data.user_type === 'company') {
-                                window.location.href = 'company-home.html';
+                            const redirectByType = (type) => {
+                                if (type === 'company') {
+                                    window.location.href = 'company-home.html';
+                                } else {
+                                    window.location.href = 'passenger-home.html';
+                                }
+                            };
+
+                            if (response.data && response.data.user_type) {
+                                redirectByType(response.data.user_type);
                             } else {
-                                window.location.href = 'passenger-home.html';
+                                // Fallback: fetch profile and decide
+                                getProfile()
+                                    .done(function(profileResp) {
+                                        if (profileResp.success && profileResp.data && profileResp.data.user_type) {
+                                            redirectByType(profileResp.data.user_type);
+                                        } else {
+                                            window.location.href = 'index.html';
+                                        }
+                                    })
+                                    .fail(function() {
+                                        window.location.href = 'index.html';
+                                    });
                             }
                         }, 1500);
                     } else {

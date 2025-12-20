@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flight Info</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body style="padding: 20px;">
+
+<div class="container">
+  <h2 id="flightName"></h2>
+  <p><strong>Fees:</strong> $<span id="fees"></span></p>
+
+  <div class="itinerary" id="itinerary"></div>
+
+  <div class="actions">
+    <button class="pay" onclick="book('account')">Pay from Account</button>
+    <button class="cash" onclick="book('cash')">Cash (Pending)</button>
+    <button class="message" onclick="goMessage()">Message Company</button>
+  </div>
+</div>
+
+<script>
+const BASE_URL = "http://localhost:8000";
+const params = new URLSearchParams(window.location.search);
+const flightId = params.get("id");
+let companyId = null;
+
+fetch(`${BASE_URL}/services/passenger/getFlightInfo.php?flight_id=${flightId}`, {
+  credentials: "include"
+})
+.then(res => res.json())
+.then(data => {
+  const f = data.data;
+  companyId = f.company_id;
+
+  document.getElementById("flightName").textContent = f.flight_name;
+  document.getElementById("fees").textContent = f.fees;
+
+  const itin = document.getElementById("itinerary");
+  f.itinerary.forEach(i => {
+    const div = document.createElement("div");
+    div.className = "city";
+    div.innerHTML = `<strong>${i.city}</strong><br>${i.start_datetime} → ${i.end_datetime}`;
+    itin.appendChild(div);
+  });
+});
+
+function book(method) {
+  fetch(`${BASE_URL}/services/passenger/takeFlight.php`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      flight_id: flightId,
+      payment_method: method
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("Booking successful");
+    window.location.href = "search.html";
+  })
+  .catch(() => alert("Booking failed"));
+}
+
+function goMessage() {
+  window.location.href = `messages.html?company=${companyId}`;
+}
+</script>
+
+</body>
+</html>

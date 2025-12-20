@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search Flights</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Search Flights</h1>
+</header>
+
+<div class="container">
+  <div class="search-box">
+    <input type="text" id="from" placeholder="From (City)">
+    <input type="text" id="to" placeholder="To (City)">
+    <button onclick="searchFlights()">Search</button>
+  </div>
+
+  <table id="flightsTable">
+    <thead>
+      <tr>
+        <th>Flight Name</th>
+        <th>Route</th>
+        <th>Fees</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="empty" class="empty"></div>
+</div>
+
+<script>
+const BASE_URL = "http://localhost:8000";
+
+function searchFlights() {
+  const from = document.getElementById("from").value.trim();
+  const to = document.getElementById("to").value.trim();
+
+  let url = `${BASE_URL}/services/passenger/searchFlights.php`;
+  if (from || to) {
+    url += `?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  }
+
+  fetch(url, { credentials: "include" })
+    .then(res => res.json())
+    .then(data => renderFlights(data.data || []))
+    .catch(() => alert("Failed to load flights"));
+}
+
+function renderFlights(flights) {
+  const tbody = document.querySelector("tbody");
+  const empty = document.getElementById("empty");
+  tbody.innerHTML = "";
+
+  if (flights.length === 0) {
+    empty.textContent = "No flights found.";
+    return;
+  }
+
+  empty.textContent = "";
+
+  flights.forEach(f => {
+    const tr = document.createElement("tr");
+    tr.onclick = () => {
+      window.location.href = `flight-info.html?id=${f.flight_id}`;
+    };
+
+    tr.innerHTML = `
+      <td>${f.flight_name}</td>
+      <td>${f.from_city} → ${f.to_city}</td>
+      <td>$${f.fees}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+searchFlights();
+</script>
+
+</body>
+</html>

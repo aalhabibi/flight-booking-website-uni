@@ -1,6 +1,40 @@
 // Flight Booking System - Main JavaScript
 
 const API_BASE = 'services';
+// Frontend-only mock mode: set true to disable backend calls and use sample data
+const MOCK_MODE = true;
+
+function _resolved(data) {
+    return $.Deferred().resolve(data).promise();
+}
+
+function _rejected(err) {
+    return $.Deferred().reject(err).promise();
+}
+
+function mockResponse(url, method = 'GET', data = null) {
+    // simple route matching
+    if (url.indexOf('auth/login.php') !== -1) {
+        return _resolved({ success: true, message: 'Login (mock)', data: { user_type: 'passenger', email: data.email || 'mock@example.com' } });
+    }
+    if (url.indexOf('auth/register.php') !== -1) {
+        return _resolved({ success: true, message: 'Registered (mock)', data: { user_type: data.user_type || 'passenger' } });
+    }
+    if (url.indexOf('profile/get.php') !== -1) {
+        return _resolved({ success: true, data: { user_type: 'passenger', name: 'Mock User', email: 'mock@example.com' } });
+    }
+    if (url.indexOf('messages/get.php') !== -1) {
+        return _resolved({ success: true, data: [ { id:1, message: 'Hello from company', is_me: false }, { id:2, message: 'Thanks, I will book', is_me: true } ] });
+    }
+    if (url.indexOf('company/getFlights.php') !== -1 || url.indexOf('passenger/searchFlights.php') !== -1) {
+        return _resolved({ success: true, data: [ { flight_id: 1, flight_name: 'AC101', from_city: 'New York', to_city: 'Los Angeles', fees: 250 } ] });
+    }
+    if (url.indexOf('company/getFlightDetails.php') !== -1 || url.indexOf('passenger/getFlightInfo.php') !== -1) {
+        return _resolved({ success: true, data: { flight_id: data && data.flight_id ? data.flight_id : 1, flight_name: 'AC101', fees: 250, company_id: 1, itinerary: [ { city: 'New York', start_datetime: '2025-01-01 08:00', end_datetime: '2025-01-01 09:30' } ] } });
+    }
+    // default mock
+    return _resolved({ success: true, data: {} });
+}
 
 // Helper function to show alerts
 function showAlert(message, type = 'info') {
@@ -29,6 +63,11 @@ function formatCurrency(amount) {
 
 // API Call Helper
 function apiCall(url, method = 'GET', data = null) {
+    if (MOCK_MODE) {
+        // when mocking, pass the raw endpoint path so mockResponse can match
+        return mockResponse(url, method, data);
+    }
+
     const options = {
         url: `${API_BASE}/${url}`,
         method: method,
@@ -52,6 +91,7 @@ function apiCall(url, method = 'GET', data = null) {
 
 // Check if user is logged in
 function checkAuth() {
+    if (MOCK_MODE) return mockResponse('profile/get.php', 'GET');
     return $.ajax({
         url: `${API_BASE}/profile/get.php`,
         method: 'GET',
@@ -71,6 +111,11 @@ function requireAuth() {
 
 // Register function
 function register(data, additionalData = null) {
+    if (MOCK_MODE) {
+        // return mocked successful registration
+        return mockResponse('auth/register.php', 'POST', data);
+    }
+
     const formData = new FormData();
     
     // Add basic fields
@@ -99,7 +144,25 @@ function register(data, additionalData = null) {
             }
         }
     }
-    
+    // debug: list FormData keys and file names
+    try {
+        if (window.DEBUG_REGISTRATION) {
+            console.group('DEBUG register FormData');
+            for (let pair of formData.entries()) {
+                const key = pair[0];
+                const val = pair[1];
+                if (val instanceof File) {
+                    console.log(key + ': File —', val.name, val.type, val.size);
+                } else {
+                    console.log(key + ':', val);
+                }
+            }
+            console.groupEnd();
+        }
+    } catch (e) {
+        console.warn('FormData debug failed', e);
+    }
+
     return $.ajax({
         url: `${API_BASE}/auth/register.php`,
         method: 'POST',
@@ -196,10 +259,7 @@ function sendMessage(receiverId, message) {
 
 // Initialize on page load
 $(document).ready(function() {
-    // Handle form submissions
-    $('form').on('submit', function(e) {
-        e.preventDefault();
-    });
+    // Removed global form submit preventer to allow individual form handlers to work
     
     // Close modal on outside click
     $('.modal').on('click', function(e) {

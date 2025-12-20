@@ -52,10 +52,29 @@
                     if (response.success) {
                         showAlert('Login successful! Redirecting...', 'success');
                         setTimeout(() => {
-                            if (response.data.user_type === 'company') {
-                                window.location.href = 'company-home.html';
+                            const redirectByType = (type) => {
+                                if (type === 'company') {
+                                    window.location.href = 'company-home.html';
+                                } else {
+                                    window.location.href = 'passenger-home.html';
+                                }
+                            };
+
+                            if (response.data && response.data.user_type) {
+                                redirectByType(response.data.user_type);
                             } else {
-                                window.location.href = 'passenger-home.html';
+                                // Fallback: fetch profile and decide
+                                getProfile()
+                                    .done(function(profileResp) {
+                                        if (profileResp.success && profileResp.data && profileResp.data.user_type) {
+                                            redirectByType(profileResp.data.user_type);
+                                        } else {
+                                            window.location.href = 'index.html';
+                                        }
+                                    })
+                                    .fail(function() {
+                                        window.location.href = 'index.html';
+                                    });
                             }
                         }, 1000);
                     } else {

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Messages</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body style="padding: 20px;">
+
+<div class="container">
+  <div class="chat-container">
+    <div class="chat-sidebar">
+      <div class="chat-list-title">Conversations</div>
+      <div class="chat-list" id="chatList"></div>
+    </div>
+    
+    <div class="chat-main">
+      <div class="chat-header">Conversation with Company</div>
+      <div class="chat-messages" id="messages"></div>
+      <div class="chat-input">
+        <input type="text" id="msgText" placeholder="Type a message...">
+        <button onclick="send()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Frontend-only mock messages
+const companyId = new URLSearchParams(window.location.search).get("company") || '1';
+const mockMessages = [
+  { id: 1, message: 'Hello — how can we help?', is_me: false },
+  { id: 2, message: 'I want to book a flight.', is_me: true }
+];
+
+function renderMessages() {
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+  mockMessages.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "message-item " + (m.is_me ? "sent" : "");
+    div.innerHTML = `<div class="message-bubble">${m.message}</div>`;
+    box.appendChild(div);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function send() {
+  const textEl = document.getElementById("msgText");
+  const text = textEl.value.trim();
+  if (!text) return;
+  mockMessages.push({ id: mockMessages.length + 1, message: text, is_me: true });
+  textEl.value = '';
+  renderMessages();
+}
+
+renderMessages();
+</script>
+
+</body>
+</html>
