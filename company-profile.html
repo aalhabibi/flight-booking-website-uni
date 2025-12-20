@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profile - Flight Booking System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="company-home.html" class="logo">✈️ Flight Booking</a>
+                <nav class="nav">
+                    <a href="company-home.html" class="nav-link">Home</a>
+                    <a href="company-profile.html" class="nav-link">Profile</a>
+                    <a href="#" class="nav-link" id="messagesLink">Messages</a>
+                    <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div id="alert-container"></div>
+        
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <img id="profileLogo" src="" alt="Company Logo" class="profile-logo" style="display: none;">
+            <div class="profile-info">
+                <h1 id="profileName">Loading...</h1>
+                <p id="profileEmail"></p>
+                <p id="profileLocation"></p>
+            </div>
+        </div>
+        
+        <!-- Profile Sections -->
+        <div class="card" id="viewMode">
+            <div class="card-header">
+                <h2 class="card-title">Company Information</h2>
+                <button class="btn btn-primary" id="editBtn">Edit Profile</button>
+            </div>
+            
+            <div class="profile-section">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <p id="viewName"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <p id="viewEmail"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <p id="viewTel"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    <p id="viewBio" style="white-space: pre-wrap;"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <p id="viewAddress" style="white-space: pre-wrap;"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <p id="viewLocation"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Form -->
+        <div class="card" id="editMode" style="display: none;">
+            <div class="card-header">
+                <h2 class="card-title">Edit Profile</h2>
+            </div>
+            
+            <form id="profileForm">
+                <div class="form-group">
+                    <label class="form-label" for="editName">Name</label>
+                    <input type="text" id="editName" name="name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editTel">Phone</label>
+                    <input type="tel" id="editTel" name="tel" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editBio">Bio</label>
+                    <textarea id="editBio" name="bio" class="form-textarea" rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editAddress">Address</label>
+                    <textarea id="editAddress" name="address" class="form-textarea" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editLocation">Location</label>
+                    <input type="text" id="editLocation" name="location" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editLogo">Logo</label>
+                    <input type="file" id="editLogo" name="logo" class="form-input" accept="image/*">
+                    <small class="text-secondary">Leave empty to keep current logo</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editPassword">New Password (optional)</label>
+                    <input type="password" id="editPassword" name="password" class="form-input" minlength="8">
+                    <small class="text-secondary">Leave empty to keep current password</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Flights List -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">My Flights</h2>
+            </div>
+            
+            <div id="loadingFlights" class="loading">
+                <div class="spinner"></div>
+                <p>Loading flights...</p>
+            </div>
+            
+            <div id="flightsContainer" style="display: none;">
+                <table class="flights-table">
+                    <thead>
+                        <tr>
+                            <th>Flight Code</th>
+                            <th>Flight Name</th>
+                            <th>Itinerary</th>
+                            <th>Passengers</th>
+                            <th>Fees</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flightsTableBody">
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="noFlights" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">✈️</div>
+                <h3>No flights yet</h3>
+                <p>Get started by adding your first flight!</p>
+                <a href="company-home.html" class="btn btn-primary mt-2">Go to Home</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let profileData = {};
+        
+        // Load profile data
+        function loadProfile() {
+            getProfile()
+                .done(function(response) {
+                    if (response.success) {
+                        profileData = response.data;
+                        renderProfile();
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                })
+                .fail(function() {
+                    window.location.href = 'login.html';
+                });
+            
+            loadFlights();
+        }
+        
+        // Render profile in view mode
+        function renderProfile() {
+            $('#profileName').text(profileData.name || 'Company');
+            $('#profileEmail').text(profileData.email || '');
+            $('#profileLocation').text(profileData.location || '');
+            
+            if (profileData.logo_url) {
+                $('#profileLogo').attr('src', profileData.logo_url).show();
+            }
+            
+            $('#viewName').text(profileData.name || 'N/A');
+            $('#viewEmail').text(profileData.email || 'N/A');
+            $('#viewTel').text(profileData.tel || 'N/A');
+            $('#viewBio').text(profileData.bio || 'No bio available');
+            $('#viewAddress').text(profileData.address || 'No address available');
+            $('#viewLocation').text(profileData.location || 'N/A');
+            
+            // Populate edit form
+            $('#editName').val(profileData.name || '');
+            $('#editTel').val(profileData.tel || '');
+            $('#editBio').val(profileData.bio || '');
+            $('#editAddress').val(profileData.address || '');
+            $('#editLocation').val(profileData.location || '');
+        }
+        
+        // Load flights
+        function loadFlights() {
+            $('#loadingFlights').show();
+            $('#flightsContainer').hide();
+            $('#noFlights').hide();
+            
+            getCompanyFlights()
+                .done(function(response) {
+                    $('#loadingFlights').hide();
+                    
+                    if (response.success && response.data.flights && response.data.flights.length > 0) {
+                        renderFlights(response.data.flights);
+                        $('#flightsContainer').show();
+                    } else {
+                        $('#noFlights').show();
+                    }
+                })
+                .fail(function() {
+                    $('#loadingFlights').hide();
+                    showAlert('Failed to load flights', 'error');
+                });
+        }
+        
+        // Render flights table
+        function renderFlights(flights) {
+            const tbody = $('#flightsTableBody');
+            tbody.empty();
+            
+            flights.forEach(flight => {
+                const row = $('<tr>');
+                
+                row.append($('<td>').text(flight.flight_code));
+                row.append($('<td>').text(flight.flight_name));
+                row.append($('<td>').text(flight.itinerary_string || 'N/A'));
+                row.append($('<td>').text(`${flight.registered_passengers || 0} / ${flight.max_passengers}`));
+                row.append($('<td>').text(formatCurrency(flight.fees)));
+                row.append($('<td>').html(`<span class="flight-status ${flight.status}">${flight.status}</span>`));
+                
+                row.on('click', function() {
+                    window.location.href = `company-home.html?flight=${flight.id}`;
+                });
+                
+                tbody.append(row);
+            });
+        }
+        
+        // Edit mode
+        $('#editBtn').on('click', function() {
+            $('#viewMode').hide();
+            $('#editMode').show();
+        });
+        
+        $('#cancelEditBtn').on('click', function() {
+            $('#editMode').hide();
+            $('#viewMode').show();
+            renderProfile(); // Reset form
+        });
+        
+        // Submit profile form
+        $('#profileForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: $('#editName').val(),
+                tel: $('#editTel').val(),
+                bio: $('#editBio').val(),
+                address: $('#editAddress').val(),
+                location: $('#editLocation').val()
+            };
+            
+            const password = $('#editPassword').val();
+            if (password) {
+                formData.password = password;
+            }
+            
+            formData.logo = $('#editLogo')[0];
+            
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Saving...');
+            
+            updateProfile(formData)
+                .done(function(response) {
+                    if (response.success) {
+                        profileData = response.data;
+                        showAlert('Profile updated successfully!', 'success');
+                        $('#editMode').hide();
+                        $('#viewMode').show();
+                        renderProfile();
+                    } else {
+                        showAlert(response.message || 'Failed to update profile', 'error');
+                        submitBtn.prop('disabled', false).text(originalText);
+                    }
+                })
+                .fail(function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    showAlert(response.message || 'Failed to update profile', 'error');
+                    submitBtn.prop('disabled', false).text(originalText);
+                });
+        });
+        
+        // Initialize
+        $(document).ready(function() {
+            requireAuth();
+            loadProfile();
+        });
+    </script>
+</body>
+</html>
+
