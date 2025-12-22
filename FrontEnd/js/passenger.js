@@ -624,9 +624,18 @@ async function loadProfile() {
       $("#profileTel").val(profile.tel);
       $("#profileBalance").text(parseFloat(profile.account_balance).toFixed(2));
 
+      // ✅ Profile photo
       if (profile.photo_path) {
         $("#profileAvatar").html(
           `<img src="${API_CONFIG.BASE_URL}/uploads/${profile.photo_path}" alt="Profile">`
+        );
+      }
+
+      // ✅ PASSPORT IMAGE - ADD THIS
+      if (profile.passport_path || profile.passport_img_path) {
+        const passportPath = profile.passport_path || profile.passport_img_path;
+        $("#profilePassportPreview").html(
+          `<img src="${API_CONFIG.BASE_URL}/uploads/${passportPath}" alt="Passport" style="max-width: 200px; border: 1px solid #ddd; border-radius: 4px;">`
         );
       }
     }
@@ -634,6 +643,7 @@ async function loadProfile() {
     console.error("Load profile error:", error);
   }
 }
+
 
 function initModals() {
   // View flight details
