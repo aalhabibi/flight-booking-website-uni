@@ -46,30 +46,62 @@ try {
         jsonResponse(false, 'Itinerary is required and must contain at least one city', null, RESPONSE_BAD_REQUEST);
     }
     
+    if (count($data['itinerary']) < 2) {
+        jsonResponse(false, 'Itinerary must contain at least 2 stops (departure and arrival)', null, RESPONSE_BAD_REQUEST);
+    }
+    
+    $totalStops = count($data['itinerary']);
+    
     // Validate each itinerary item
     foreach ($data['itinerary'] as $index => $stop) {
+        $isFirstStop = ($index === 0);
+        $isLastStop = ($index === $totalStops - 1);
+        $isLayover = !$isFirstStop && !$isLastStop;
+        
+        // Base validation - city is always required
         $itineraryRules = [
-            'city' => 'required|min:2|max:255',
-            'start_datetime' => 'required|datetime',
-            'end_datetime' => 'required|datetime'
+            'city' => 'required|min:2|max:255'
         ];
         
+        // Conditional datetime validation based on position
+        if ($isFirstStop) {
+            // First stop (Departure) - only end_datetime (departure time) required
+            $itineraryRules['end_datetime'] = 'required|datetime';
+        } else if ($isLastStop) {
+            // Last stop (Arrival) - only start_datetime (arrival time) required
+            $itineraryRules['start_datetime'] = 'required|datetime';
+        } else {
+            
+            // Layover stops - both times required
+            $itineraryRules['start_datetime'] = 'required|datetime';
+            $itineraryRules['end_datetime'] = 'required|datetime';
+        }
+        
         if (!$validator->validate($stop, $itineraryRules)) {
-            jsonResponse(false, "Itinerary item {$index} validation failed", [
+            $stopLabel = $isFirstStop ? 'Departure city' : ($isLastStop ? 'Arrival city' : "Layover stop " . $index);
+            jsonResponse(false, "{$stopLabel} validation failed", [
                 'errors' => $validator->getErrors()
             ], RESPONSE_BAD_REQUEST);
         }
         
-        // Validate datetime range
-        if (!Validator::validateDatetimeRange($stop['start_datetime'], $stop['end_datetime'])) {
-            jsonResponse(false, "Invalid datetime range for itinerary item {$index}", null, RESPONSE_BAD_REQUEST);
+        // For layover stops, validate that arrival is before departure
+        if ($isLayover) {
+            if (!Validator::validateDatetimeRange($stop['start_datetime'], $stop['end_datetime'])) {
+                jsonResponse(false, "Invalid datetime range for layover stop {$index} - departure must be after arrival", null, RESPONSE_BAD_REQUEST);
+            }
         }
         
         // Validate sequence (each stop should start after previous ends)
         if ($index > 0) {
             $prevStop = $data['itinerary'][$index - 1];
-            if (strtotime($stop['start_datetime']) < strtotime($prevStop['end_datetime'])) {
-                jsonResponse(false, "Itinerary item {$index} starts before previous stop ends", null, RESPONSE_BAD_REQUEST);
+            $prevDeparture = $prevStop['end_datetime'] ?? null;
+            $currArrival = $stop['start_datetime'] ?? null;
+            
+            if ($prevDeparture && $currArrival) {
+                if (strtotime($currArrival) < strtotime($prevDeparture)) {
+                    $stopLabel = $isLastStop ? 'Arrival city' : "Layover stop " . $index;
+                    jsonResponse(false, "{$stopLabel} arrival time must be after previous departure time", null, RESPONSE_BAD_REQUEST);
+                }
             }
         }
     }
@@ -107,10 +139,23 @@ try {
             VALUES (?, ?, ?, ?, ?)
         ");
         
+        $totalStopsForInsert = count($data['itinerary']);
+        
         foreach ($data['itinerary'] as $index => $stop) {
             $city = Validator::sanitize($stop['city']);
-            $startDatetime = $stop['start_datetime'];
-            $endDatetime = $stop['end_datetime'];
+            $isFirstStop = ($index === 0);
+            $isLastStop = ($index === $totalStopsForInsert - 1);
+            
+            $startDatetime = $stop['start_datetime'] ?? null;
+            $endDatetime = $stop['end_datetime'] ?? null;
+            
+            // This is for storage only - validation already happened above
+            if ($isFirstStop && $startDatetime === null) {
+                $startDatetime = $endDatetime; // Use departure time for both
+            }
+            if ($isLastStop && $endDatetime === null) {
+                $endDatetime = $startDatetime; // Use arrival time for both
+            }
             
             $stmt->execute([
                 $flightId,

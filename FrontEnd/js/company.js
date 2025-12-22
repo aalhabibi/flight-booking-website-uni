@@ -651,7 +651,6 @@ function initModals() {
 
     if (!flightData) return;
 
-    // Debug: Log the flight data being sent
     console.log("Submitting flight data:", JSON.stringify(flightData, null, 2));
 
     Utils.showLoading("saveFlightBtn");
@@ -735,6 +734,15 @@ function addItineraryItem(data = null) {
 
   item.find(".itinerary-number").text(label);
 
+  // Show/hide fields based on position
+  // Note: We'll update this after adding to determine if it's the last stop
+  if (currentCount === 0) {
+    // First stop (Departure) - only show departure time
+    item.find(".arrival-time-group").hide();
+    item.find('input[name="start_datetime"]').removeAttr('required');
+  }
+  // All other stops initially show both fields
+
   if (data) {
     item.find('input[name="city"]').val(data.city);
     item
@@ -746,6 +754,9 @@ function addItineraryItem(data = null) {
   }
 
   $("#itineraryItems").append(item);
+
+  // After adding, update all items to ensure the last one is set correctly
+  updateItineraryFieldVisibility();
 
   // Add jQuery UI autocomplete to the newly added city field
   const popularCities = [
@@ -797,6 +808,38 @@ function updateItineraryNumbers() {
     $(this).find(".itinerary-number").text(label);
   });
   itineraryCount = $("#itineraryItems .itinerary-item").length;
+  
+  // Update field visibility
+  updateItineraryFieldVisibility();
+}
+
+function updateItineraryFieldVisibility() {
+  const totalItems = $("#itineraryItems .itinerary-item").length;
+  
+  $("#itineraryItems .itinerary-item").each(function (index) {
+    const isFirst = (index === 0);
+    const isLast = (index === totalItems - 1);
+    
+    if (isFirst) {
+      // First stop - only departure time
+      $(this).find(".arrival-time-group").hide();
+      $(this).find(".departure-time-group").show();
+      $(this).find('input[name="start_datetime"]').removeAttr('required');
+      $(this).find('input[name="end_datetime"]').attr('required', 'required');
+    } else if (isLast) {
+      // Last stop - only arrival time
+      $(this).find(".arrival-time-group").show();
+      $(this).find(".departure-time-group").hide();
+      $(this).find('input[name="start_datetime"]').attr('required', 'required');
+      $(this).find('input[name="end_datetime"]').removeAttr('required');
+    } else {
+      // Middle/layover stops - both times
+      $(this).find(".arrival-time-group").show();
+      $(this).find(".departure-time-group").show();
+      $(this).find('input[name="start_datetime"]').attr('required', 'required');
+      $(this).find('input[name="end_datetime"]').attr('required', 'required');
+    }
+  });
 }
 
 function collectFlightData() {
@@ -825,6 +868,8 @@ function collectFlightData() {
   const itinerary = [];
   let hasError = false;
 
+  const totalItems = $("#itineraryItems .itinerary-item").length;
+
   $("#itineraryItems .itinerary-item").each(function (index) {
     const city = $(this).find('input[name="city"]').val().trim();
     const startDatetime = $(this).find('input[name="start_datetime"]').val();
@@ -834,30 +879,77 @@ function collectFlightData() {
     let stopLabel;
     if (index === 0) {
       stopLabel = "Departure city";
-    } else if (index === 1) {
+    } else if (index === totalItems - 1) {
       stopLabel = "Arrival city";
     } else {
-      stopLabel = `Stop ${index - 1}`;
+      stopLabel = `Stop ${index} (Layover)`;
     }
 
-    if (!city || !startDatetime || !endDatetime) {
-      alert(`Please fill in all fields for ${stopLabel}`);
+    if (!city) {
+      alert(`Please enter a city name for ${stopLabel}`);
       hasError = true;
       return false;
     }
 
-    if (new Date(startDatetime) >= new Date(endDatetime)) {
-      alert(`${stopLabel}: Departure time must be after arrival time`);
-      hasError = true;
-      return false;
+    // Determine what times we need based on position
+    const isFirstStop = (index === 0);
+    const isLastStop = (index === totalItems - 1);
+    const isLayover = !isFirstStop && !isLastStop;
+
+    if (isFirstStop) {
+      // First stop - only departure time required
+      if (!endDatetime) {
+        alert(`Please enter departure time for ${stopLabel}`);
+        hasError = true;
+        return false;
+      }
+    } else if (isLastStop) {
+      // Last stop - only arrival time required
+      if (!startDatetime) {
+        alert(`Please enter arrival time for ${stopLabel}`);
+        hasError = true;
+        return false;
+      }
+    } else {
+      // Layover stops - both times required
+      if (!startDatetime || !endDatetime) {
+        alert(`Please fill in all time fields for ${stopLabel}`);
+        hasError = true;
+        return false;
+      }
+
+      if (new Date(startDatetime) >= new Date(endDatetime)) {
+        alert(`${stopLabel}: Departure time must be after arrival time`);
+        hasError = true;
+        return false;
+      }
     }
 
-    // Check sequence
+    // Determine final datetime values to send to backend
+    let finalStartDatetime, finalEndDatetime;
+    
+    if (isFirstStop) {
+      // First stop - only departure time, send null for arrival
+      finalStartDatetime = null;
+      finalEndDatetime = convertToMySQLDateTime(endDatetime);
+    } else if (isLastStop) {
+      // Last stop - only arrival time, send null for departure
+      finalStartDatetime = convertToMySQLDateTime(startDatetime);
+      finalEndDatetime = null;
+    } else {
+      // Layover stops - has both times
+      finalStartDatetime = convertToMySQLDateTime(startDatetime);
+      finalEndDatetime = convertToMySQLDateTime(endDatetime);
+    }
+
+    // Check time sequence with previous stop
     if (itinerary.length > 0) {
-      const prevEnd = new Date(itinerary[itinerary.length - 1].end_datetime);
-      const currStart = new Date(startDatetime);
-      if (currStart < prevEnd) {
-        alert(`${stopLabel}: Arrival must be after previous departure`);
+      const prevStop = itinerary[itinerary.length - 1];
+      const prevDeparture = new Date(prevStop.end_datetime);
+      const currArrival = new Date(finalStartDatetime);
+
+      if (currArrival < prevDeparture) {
+        alert(`${stopLabel}: Arrival time must be after previous departure time`);
         hasError = true;
         return false;
       }
@@ -865,8 +957,8 @@ function collectFlightData() {
 
     itinerary.push({
       city: city,
-      start_datetime: convertToMySQLDateTime(startDatetime),
-      end_datetime: convertToMySQLDateTime(endDatetime),
+      start_datetime: finalStartDatetime,
+      end_datetime: finalEndDatetime,
       sequence_order: index,
     });
   });
@@ -890,6 +982,7 @@ function collectFlightData() {
 }
 
 function formatDateTimeForInput(datetime) {
+  if (!datetime) return "";
   const date = new Date(datetime);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
