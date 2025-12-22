@@ -132,6 +132,20 @@ async function searchFlights(from, to) {
       '<div class="empty-state"><p>Error loading flights</p></div>'
     );
   }
+
+  $(document).on("click", ".message-company-btn", function () {
+    const companyId = $(this).data("company-id");
+    const companyName = $(this).data("company-name");
+
+    // Switch to messages section
+    $('.sidebar-menu li[data-section="messages"]').click();
+
+    // Open conversation with company
+    setTimeout(() => {
+      openConversation(companyId, companyName);
+    }, 300);
+  });
+  
 }
 
 function displaySearchResults(flights) {
@@ -210,17 +224,20 @@ function createFlightCard(flight) {
                 </div>
             </div>
             <div class="flight-actions">
-                <button class="btn btn-outline btn-sm view-flight-btn" data-flight-id="${
-                  flight.id
-                }">
-                    View Details
-                </button>
-                <button class="btn btn-primary btn-sm book-flight-btn" data-flight-id="${
-                  flight.id
-                }">
-                    Book Flight
-                </button>
+              <button class="btn btn-outline btn-sm view-flight-btn" data-flight-id="${flight.id}">
+                View Details
+              </button>
+              <!-- NEW: Message Company button -->
+              <button class="btn btn-secondary btn-sm message-company-btn" 
+                      data-company-id="${flight.company_id || flight.company?.id}" 
+                      data-company-name="${flight.company_name}">
+                💬 Message Company
+              </button>
+              <button class="btn btn-primary btn-sm book-flight-btn" data-flight-id="${flight.id}">
+                Book Flight
+              </button>
             </div>
+
         </div>
     `);
 }
