@@ -365,53 +365,56 @@ function displayAllBookings(flights) {
 }
 
 function createBookingCard(flight, booking) {
+  // ✅ Extract origin/destination from itinerary
+  const origin = flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : 'N/A';
+  const destination = flight.itinerary && flight.itinerary.length > 1 ? 
+    flight.itinerary[flight.itinerary.length - 1].city : 'N/A';
+  
+  // ✅ Use correct passenger name field (name exists, passenger_name doesn't)
+  const passengerName = booking.name || booking.passenger_name || 'Passenger';
+  
+  // ✅ Use itinerary_string if available as fallback
+  const routeDisplay = flight.itinerary_string || `${origin} → ${destination}`;
+
   return $(`
-        <div class="booking-card">
-            <div class="booking-header">
-                <div>
-                    <div class="flight-title">${flight.flight_name} - ${
-    booking.passenger_name
-  }</div>
-                    <div class="flight-code">${flight.flight_code}</div>
-                </div>
-                <span class="status-badge status-${booking.booking_status}">${
-    booking.booking_status
-  }</span>
-            </div>
-            <div class="booking-info">
-                <div class="info-item">
-                    <span class="info-label">Passenger</span>
-                    <span class="info-value">${booking.name}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Booking Date</span>
-                    <span class="info-value">${Utils.formatDate(
-                      booking.booking_date
-                    )}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Amount</span>
-                    <span class="info-value">${Utils.formatCurrency(
-                      booking.amount_paid
-                    )}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Payment</span>
-                    <span class="info-value">${
-                      booking.payment_method === "account" ? "Account" : "Cash"
-                    }</span>
-                </div>
-            </div>
-            <div class="booking-actions">
-                <button class="btn btn-secondary btn-sm message-passenger-btn" 
-                        data-passenger-id="${booking.passenger_id}" 
-                        data-passenger-name="${booking.passenger_name}">
-                    Message Passenger
-                </button>
-            </div>
+    <div class="booking-card">
+      <div class="booking-header">
+        <div>
+          <!-- ✅ FIXED: Shows "Cairo → Dubai - Passenger" -->
+          <div class="flight-title">${routeDisplay} - ${passengerName}</div>
+          <div class="flight-code">${flight.flight_code}</div>
         </div>
-    `);
+        <span class="status-badge status-${booking.booking_status}">${booking.booking_status}</span>
+      </div>
+      <div class="booking-info">
+        <div class="info-item">
+          <span class="info-label">Passenger</span>
+          <span class="info-value">${booking.name}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Booking Date</span>
+          <span class="info-value">${Utils.formatDate(booking.booking_date)}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Amount</span>
+          <span class="info-value">${Utils.formatCurrency(booking.amount_paid)}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Payment</span>
+          <span class="info-value">${booking.payment_method === "account" ? "Account" : "Cash"}</span>
+        </div>
+      </div>
+      <div class="booking-actions">
+        <button class="btn btn-secondary btn-sm message-passenger-btn" 
+                data-passenger-id="${booking.passenger_id}" 
+                data-passenger-name="${passengerName}">
+          Message Passenger
+        </button>
+      </div>
+    </div>
+  `);
 }
+
 
 function initMessages() {
   // Send message form
