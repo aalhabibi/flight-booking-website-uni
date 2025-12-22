@@ -1,6 +1,8 @@
 // API Configuration
 const API_CONFIG = {
-  BASE_URL: "http://localhost:8000/Backend",
+
+  //changed to suit my local host
+  BASE_URL: 'http://localhost/flight-booking-website-uni/Backend',
   ENDPOINTS: {
     // Auth
     LOGIN: "/services/auth/login.php",
