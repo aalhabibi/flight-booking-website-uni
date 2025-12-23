@@ -133,7 +133,6 @@ async function searchFlights(from, to) {
     );
   }
 
-  
 }
 
 function displaySearchResults(flights) {
@@ -219,13 +218,7 @@ function createFlightCard(flight) {
               </button>
               <!-- NEW: Message Company button -->
               <button class="btn btn-secondary btn-sm message-company-btn" 
-<<<<<<< HEAD
                       data-company-id="${flight.company_id || '1'}"
-=======
-                      data-company-id="${
-                        flight.company_id || flight.company?.id
-                      }" 
->>>>>>> a47f114af971f573b8259ebcef184ce63a19b80f
                       data-company-name="${flight.company_name}">
                 💬 Message Company
               </button>
