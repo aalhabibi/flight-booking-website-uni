@@ -16,6 +16,17 @@ class Auth {
     }
     
     public static function requireLogin() {
+        // Ensure session is active and not expired
+        self::startSession();
+        if (!self::checkSessionTimeout()) {
+            http_response_code(RESPONSE_UNAUTHORIZED);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Session expired. Please log in again.'
+            ]);
+            exit;
+        }
+
         if (!self::isLoggedIn()) {
             http_response_code(RESPONSE_UNAUTHORIZED);
             echo json_encode([
@@ -120,7 +131,4 @@ class Auth {
         return password_verify($password, $hash);
     }
     
-    public static function generateToken($length = 32) {
-        return bin2hex(random_bytes($length));
-    }
 }
