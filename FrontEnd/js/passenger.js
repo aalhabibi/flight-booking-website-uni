@@ -133,18 +133,6 @@ async function searchFlights(from, to) {
     );
   }
 
-  $(document).on("click", ".message-company-btn", function () {
-    const companyId = $(this).data("company-id");
-    const companyName = $(this).data("company-name");
-
-    // Switch to messages section
-    $('.sidebar-menu li[data-section="messages"]').click();
-
-    // Open conversation with company
-    setTimeout(() => {
-      openConversation(companyId, companyName);
-    }, 300);
-  });
 }
 
 function displaySearchResults(flights) {
@@ -230,9 +218,7 @@ function createFlightCard(flight) {
               </button>
               <!-- NEW: Message Company button -->
               <button class="btn btn-secondary btn-sm message-company-btn" 
-                      data-company-id="${
-                        flight.company_id || flight.company?.id
-                      }" 
+                      data-company-id="${flight.company_id || '1'}"
                       data-company-name="${flight.company_name}">
                 💬 Message Company
               </button>

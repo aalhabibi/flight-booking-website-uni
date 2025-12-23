@@ -87,12 +87,6 @@ function initFlights() {
     const flightId = $(this).data("flight-id");
     await cancelFlight(flightId);
   });
-
-  // Complete flight
-  $(document).on("click", ".complete-flight-btn", async function () {
-    const flightId = $(this).data("flight-id");
-    await completeFlight(flightId);
-  });
 }
 
 async function loadFlights() {
@@ -134,6 +128,22 @@ function displayFlights(flights) {
 }
 
 function createCompanyFlightCard(flight) {
+  // Extract origin/destination from itinerary
+  const departureCity =
+    flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : null;
+  const arrivalCity =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].city
+      : null;
+  const departureTime =
+    flight.itinerary && flight.itinerary[0]
+      ? flight.itinerary[0].start_datetime
+      : null;
+  const arrivalTime =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].end_datetime
+      : null;
+
   return $(`
         <div class="flight-card">
             <div class="flight-header">
@@ -141,10 +151,41 @@ function createCompanyFlightCard(flight) {
                     <div class="flight-title">${flight.flight_name}</div>
                     <div class="flight-code">${flight.flight_code}</div>
                 </div>
-                <span class="status-badge status-${flight.status}">${
-    flight.status
-  }</span>
+                <div class="flight-price">${Utils.formatCurrency(
+                  flight.fees
+                )}</div>
             </div>
+            ${
+              departureCity && arrivalCity
+                ? `
+            <div class="flight-route">
+                <div class="route-point">
+                    <div class="route-city">${departureCity}</div>
+                    ${
+                      departureTime
+                        ? `<div class="route-time">${Utils.formatDate(
+                            departureTime
+                          )}</div>`
+                        : ""
+                    }
+                </div>
+                <div class="route-arrow">
+                    <div class="route-line"></div>
+                </div>
+                <div class="route-point">
+                    <div class="route-city">${arrivalCity}</div>
+                    ${
+                      arrivalTime
+                        ? `<div class="route-time">${Utils.formatDate(
+                            arrivalTime
+                          )}</div>`
+                        : ""
+                    }
+                </div>
+            </div>
+            `
+                : ""
+            }
             <div class="flight-info">
                 <div class="info-item">
                     <span class="info-label">Passengers</span>
@@ -153,10 +194,10 @@ function createCompanyFlightCard(flight) {
                     } / ${flight.max_passengers}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Price</span>
-                    <span class="info-value">${Utils.formatCurrency(
-                      flight.fees
-                    )}</span>
+                    <span class="info-label">Status</span>
+                    <span class="status-badge status-${flight.status}">${
+    flight.status
+  }</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Revenue</span>
@@ -185,15 +226,6 @@ function createCompanyFlightCard(flight) {
                     </button>
                     <button class="btn btn-danger btn-sm cancel-flight-btn" data-flight-id="${flight.id}">
                         Cancel
-                    </button>
-                `
-                    : ""
-                }
-                ${
-                  flight.status === "pending"
-                    ? `
-                    <button class="btn btn-success btn-sm complete-flight-btn" data-flight-id="${flight.id}">
-                        Complete Flight
                     </button>
                 `
                     : ""
@@ -318,26 +350,6 @@ async function cancelFlight(flightId) {
   }
 }
 
-async function completeFlight(flightId) {
-  if (!confirm("Are you sure you want to mark this flight as completed?")) {
-    return;
-  }
-
-  try {
-    const response = await API.updateFlight(flightId, { status: "completed" });
-
-    if (response.success) {
-      alert("Flight marked as completed successfully!");
-      loadFlights();
-    } else {
-      alert(response.message);
-    }
-  } catch (error) {
-    console.error("Complete flight error:", error);
-    alert("Error completing flight");
-  }
-}
-
 function initBookings() {
   // Message passenger
   $(document).on("click", ".message-passenger-btn", function () {
@@ -400,32 +412,65 @@ function displayAllBookings(flights) {
 }
 
 function createBookingCard(flight, booking) {
-  // ✅ Extract origin/destination from itinerary
-  const origin =
-    flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : "N/A";
-  const destination =
+  // Extract origin/destination from itinerary
+  const departureCity =
+    flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : null;
+  const arrivalCity =
     flight.itinerary && flight.itinerary.length > 1
       ? flight.itinerary[flight.itinerary.length - 1].city
-      : "N/A";
+      : null;
+  const departureTime =
+    flight.itinerary && flight.itinerary[0]
+      ? flight.itinerary[0].start_datetime
+      : null;
+  const arrivalTime =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].end_datetime
+      : null;
 
-  // ✅ Use correct passenger name field (name exists, passenger_name doesn't)
+  // Use correct passenger name field
   const passengerName = booking.name || booking.passenger_name || "Passenger";
-
-  // ✅ Use itinerary_string if available as fallback
-  const routeDisplay = flight.itinerary_string || `${origin} → ${destination}`;
 
   return $(`
     <div class="booking-card">
       <div class="booking-header">
         <div>
-          <!-- ✅ FIXED: Shows "Cairo → Dubai - Passenger" -->
-          <div class="flight-title">${routeDisplay} - ${passengerName}</div>
+          <div class="flight-title">${flight.flight_name}</div>
           <div class="flight-code">${flight.flight_code}</div>
         </div>
         <span class="status-badge status-${booking.booking_status}">${
     booking.booking_status
   }</span>
       </div>
+      ${
+        departureCity && arrivalCity
+          ? `
+      <div class="flight-route">
+        <div class="route-point">
+          <div class="route-city">${departureCity}</div>
+          ${
+            departureTime
+              ? `<div class="route-time">${Utils.formatDate(
+                  departureTime
+                )}</div>`
+              : ""
+          }
+        </div>
+        <div class="route-arrow">
+          <div class="route-line"></div>
+        </div>
+        <div class="route-point">
+          <div class="route-city">${arrivalCity}</div>
+          ${
+            arrivalTime
+              ? `<div class="route-time">${Utils.formatDate(arrivalTime)}</div>`
+              : ""
+          }
+        </div>
+      </div>
+      `
+          : ""
+      }
       <div class="booking-info">
         <div class="info-item">
           <span class="info-label">Passenger</span>
