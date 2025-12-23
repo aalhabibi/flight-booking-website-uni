@@ -145,7 +145,6 @@ async function searchFlights(from, to) {
       openConversation(companyId, companyName);
     }, 300);
   });
-  
 }
 
 function displaySearchResults(flights) {
@@ -224,16 +223,22 @@ function createFlightCard(flight) {
                 </div>
             </div>
             <div class="flight-actions">
-              <button class="btn btn-outline btn-sm view-flight-btn" data-flight-id="${flight.id}">
+              <button class="btn btn-outline btn-sm view-flight-btn" data-flight-id="${
+                flight.id
+              }">
                 View Details
               </button>
               <!-- NEW: Message Company button -->
               <button class="btn btn-secondary btn-sm message-company-btn" 
-                      data-company-id="${flight.company_id || flight.company?.id}" 
+                      data-company-id="${
+                        flight.company_id || flight.company?.id
+                      }" 
                       data-company-name="${flight.company_name}">
                 💬 Message Company
               </button>
-              <button class="btn btn-primary btn-sm book-flight-btn" data-flight-id="${flight.id}">
+              <button class="btn btn-primary btn-sm book-flight-btn" data-flight-id="${
+                flight.id
+              }">
                 Book Flight
               </button>
             </div>
@@ -611,19 +616,27 @@ function initProfile() {
       return;
     }
 
-    // In a real application, this would integrate with a payment gateway
-    alert(
-      "Payment gateway integration would be here. For demo purposes, balance will be added."
-    );
+    try {
+      const formData = new FormData();
+      formData.append("account_balance", amount);
 
-    // Simulate balance update
-    const userData = Session.getUserData();
-    userData.account_balance = parseFloat(userData.account_balance) + amount;
-    Session.setUserData(userData);
-    updateBalance(userData.account_balance);
+      const response = await API.updateProfile(formData);
 
-    Utils.closeModal("balanceModal");
-    $("#balanceAmount").val("");
+      if (response.success) {
+        // Update session data
+        const userData = Session.getUserData();
+        await loadUserInfo();
+
+        alert("Funds added successfully!");
+        Utils.closeModal("balanceModal");
+        $("#balanceAmount").val("");
+      } else {
+        alert(response.message || "Error adding funds");
+      }
+    } catch (error) {
+      console.error("Add balance error:", error);
+      alert("Error adding funds");
+    }
   });
 }
 
@@ -660,7 +673,6 @@ async function loadProfile() {
     console.error("Load profile error:", error);
   }
 }
-
 
 function initModals() {
   // View flight details
