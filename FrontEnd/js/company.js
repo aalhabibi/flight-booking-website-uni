@@ -652,6 +652,21 @@ function initProfile() {
   $("#profileForm").on("submit", async function (e) {
     e.preventDefault();
 
+    const password = $("#profilePassword").val();
+    const confirmPassword = $("#profileConfirmPassword").val();
+
+    // Validate passwords if provided
+    if (password || confirmPassword) {
+      if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+      if (password.length < 8) {
+        alert("Password must be at least 8 characters");
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.append("name", $("#profileFullName").val());
     formData.append("username", $("#profileUsername").val());
@@ -660,6 +675,12 @@ function initProfile() {
     formData.append("bio", $("#profileBio").val());
     formData.append("address", $("#profileAddress").val());
     formData.append("location", $("#profileLocation").val());
+
+    // Add password if provided
+    if (password) {
+      formData.append("password", password);
+      formData.append("confirm_password", confirmPassword);
+    }
 
     const logo = $("#profileLogo")[0].files[0];
     if (logo) formData.append("logo", logo);
@@ -675,6 +696,10 @@ function initProfile() {
         userData.email = response.data.email;
         Session.setUserData(userData);
         $("#userName").text(userData.name);
+
+        // Clear password fields
+        $("#profilePassword").val("");
+        $("#profileConfirmPassword").val("");
       } else {
         alert(response.message);
       }

@@ -74,21 +74,34 @@ body {
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
   /* Spacing */
-  --spacing-xs: 0.25rem; /* 4px */
-  --spacing-sm: 0.5rem; /* 8px */
-  --spacing-md: 1rem; /* 16px */
-  --spacing-lg: 1.5rem; /* 24px */
-  --spacing-xl: 2rem; /* 32px */
-  --spacing-2xl: 3rem; /* 48px */
-  --spacing-3xl: 4rem; /* 64px */
-  --spacing-4xl: 6rem; /* 96px */
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 1rem;
+  /* 16px */
+  --spacing-lg: 1.5rem;
+  /* 24px */
+  --spacing-xl: 2rem;
+  /* 32px */
+  --spacing-2xl: 3rem;
+  /* 48px */
+  --spacing-3xl: 4rem;
+  /* 64px */
+  --spacing-4xl: 6rem;
+  /* 96px */
 
   /* Border Radius */
-  --radius-sm: 0.25rem; /* 4px */
-  --radius-md: 0.5rem; /* 8px */
-  --radius-lg: 0.75rem; /* 12px */
-  --radius-xl: 1rem; /* 16px */
-  --radius-2xl: 1.5rem; /* 24px */
+  --radius-sm: 0.25rem;
+  /* 4px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
+  --radius-2xl: 1.5rem;
+  /* 24px */
   --radius-full: 9999px;
 
   /* Transitions */
@@ -139,6 +152,36 @@ img {
   height: auto;
 }
 
+/* Passport preview */
+.passport-preview-card {
+  margin-top: 10px;
+}
+
+.preview-title {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+
+.passport-preview {
+  width: 400px;
+  height: 280px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.passport-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
 /* ===================================
    Typography
    =================================== */
@@ -158,18 +201,23 @@ h6 {
 h1 {
   font-size: 2.5rem;
 }
+
 h2 {
   font-size: 2rem;
 }
+
 h3 {
   font-size: 1.5rem;
 }
+
 h4 {
   font-size: 1.25rem;
 }
+
 h5 {
   font-size: 1.125rem;
 }
+
 h6 {
   font-size: 1rem;
 }
@@ -523,13 +571,11 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    135deg,
-    #0f172a 0%,
-    #1e3a8a 40%,
-    #0066cc 70%,
-    #00b4d8 100%
-  );
+  background: linear-gradient(135deg,
+      #0f172a 0%,
+      #1e3a8a 40%,
+      #0066cc 70%,
+      #00b4d8 100%);
   z-index: -1;
 }
 
@@ -540,21 +586,15 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(
-      circle at 20% 50%,
+  background-image: radial-gradient(circle at 20% 50%,
       rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 80%,
+      transparent 50%),
+    radial-gradient(circle at 80% 80%,
       rgba(0, 180, 216, 0.15) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 40% 20%,
+      transparent 50%),
+    radial-gradient(circle at 40% 20%,
       rgba(255, 107, 53, 0.1) 0%,
-      transparent 40%
-    );
+      transparent 40%);
 }
 
 .hero-background::after {
@@ -564,11 +604,9 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: linear-gradient(
-      90deg,
+  background-image: linear-gradient(90deg,
       rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px
-    ),
+      transparent 1px),
     linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   opacity: 0.5;
@@ -654,13 +692,11 @@ p {
    =================================== */
 
 .auth-page {
-  background: linear-gradient(
-    135deg,
-    #0f172a 0%,
-    #1e3a8a 40%,
-    #0066cc 70%,
-    #00b4d8 100%
-  );
+  background: linear-gradient(135deg,
+      #0f172a 0%,
+      #1e3a8a 40%,
+      #0066cc 70%,
+      #00b4d8 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -674,16 +710,12 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(
-      circle at 20% 50%,
+  background-image: radial-gradient(circle at 20% 50%,
       rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 80%,
+      transparent 50%),
+    radial-gradient(circle at 80% 80%,
       rgba(0, 180, 216, 0.15) 0%,
-      transparent 50%
-    );
+      transparent 50%);
   pointer-events: none;
 }
 
@@ -2047,42 +2079,55 @@ textarea.form-control {
 .icon-plane::before {
   content: "✈️";
 }
+
 .icon-search::before {
   content: "🔍";
 }
+
 .icon-secure::before {
   content: "🔒";
 }
+
 .icon-support::before {
   content: "💬";
 }
+
 .icon-manage::before {
   content: "📋";
 }
+
 .icon-company::before {
   content: "🏢";
 }
+
 .icon-track::before {
   content: "📍";
 }
+
 .icon-globe::before {
   content: "🌍";
 }
+
 .icon-user::before {
   content: "👤";
 }
+
 .icon-ticket::before {
   content: "🎫";
 }
+
 .icon-message::before {
   content: "💬";
 }
+
 .icon-message-empty::before {
   content: "✉️";
 }
+
 .icon-plus::before {
   content: "➕";
 }
+
 .icon-spinner::before {
   content: "⏳";
   animation: spin 1s linear infinite;
@@ -2092,6 +2137,7 @@ textarea.form-control {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -2193,10 +2239,12 @@ textarea.form-control {
   }
 
   @keyframes fly {
+
     0%,
     100% {
       transform: rotate(0deg) translateY(0);
     }
+
     50% {
       transform: rotate(0deg) translateY(4px);
     }
@@ -2255,6 +2303,7 @@ textarea.form-control {
   h1 {
     font-size: 1.75rem;
   }
+
   h2 {
     font-size: 1.5rem;
   }
@@ -2304,9 +2353,11 @@ textarea.form-control {
 .text-center {
   text-align: center;
 }
+
 .text-left {
   text-align: left;
 }
+
 .text-right {
   text-align: right;
 }
@@ -2314,12 +2365,15 @@ textarea.form-control {
 .mt-1 {
   margin-top: var(--spacing-sm);
 }
+
 .mt-2 {
   margin-top: var(--spacing-md);
 }
+
 .mt-3 {
   margin-top: var(--spacing-lg);
 }
+
 .mt-4 {
   margin-top: var(--spacing-xl);
 }
@@ -2327,12 +2381,15 @@ textarea.form-control {
 .mb-1 {
   margin-bottom: var(--spacing-sm);
 }
+
 .mb-2 {
   margin-bottom: var(--spacing-md);
 }
+
 .mb-3 {
   margin-bottom: var(--spacing-lg);
 }
+
 .mb-4 {
   margin-bottom: var(--spacing-xl);
 }
@@ -2340,12 +2397,15 @@ textarea.form-control {
 .p-1 {
   padding: var(--spacing-sm);
 }
+
 .p-2 {
   padding: var(--spacing-md);
 }
+
 .p-3 {
   padding: var(--spacing-lg);
 }
+
 .p-4 {
   padding: var(--spacing-xl);
 }
@@ -2353,6 +2413,7 @@ textarea.form-control {
 .hidden {
   display: none;
 }
+
 .visible {
   display: block;
 }

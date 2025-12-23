@@ -31,8 +31,18 @@ try {
     $validator = new Validator();
     $rules = [
         'name' => 'min:2|max:255',
+        'username' => 'min:3|max:50',
+        'email' => 'email',
         'tel' => 'phone'
     ];
+    
+    // Add password validation if updating password
+    if (isset($data['password']) && !empty($data['password'])) {
+        $rules['password'] = 'min:8';
+        if (isset($data['confirm_password'])) {
+            $rules['confirm_password'] = 'match:password';
+        }
+    }
     
     if (!$validator->validate($data, $rules)) {
         jsonResponse(false, 'Validation failed', [
@@ -41,6 +51,25 @@ try {
     }
     
     $db = getDB();
+    
+    // Check username uniqueness if updating
+    if (isset($data['username'])) {
+        $stmt = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+        $stmt->execute([Validator::sanitize($data['username']), $userId]);
+        if ($stmt->fetch()) {
+            jsonResponse(false, 'Username already taken', null, RESPONSE_BAD_REQUEST);
+        }
+    }
+    
+    // Check email uniqueness if updating
+    if (isset($data['email'])) {
+        $stmt = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+        $stmt->execute([Validator::sanitize($data['email']), $userId]);
+        if ($stmt->fetch()) {
+            jsonResponse(false, 'Email already taken', null, RESPONSE_BAD_REQUEST);
+        }
+    }
+    
     $db->beginTransaction();
     
     try {
@@ -53,6 +82,16 @@ try {
             $params[] = Validator::sanitize($data['name']);
         }
         
+        if (isset($data['username'])) {
+            $updates[] = "username = ?";
+            $params[] = Validator::sanitize($data['username']);
+        }
+        
+        if (isset($data['email'])) {
+            $updates[] = "email = ?";
+            $params[] = Validator::sanitize($data['email']);
+        }
+        
         if (isset($data['tel'])) {
             $updates[] = "tel = ?";
             $params[] = Validator::sanitize($data['tel']);
@@ -60,9 +99,6 @@ try {
         
         // Update password if provided
         if (isset($data['password']) && !empty($data['password'])) {
-            if (strlen($data['password']) < PASSWORD_MIN_LENGTH) {
-                jsonResponse(false, 'Password must be at least ' . PASSWORD_MIN_LENGTH . ' characters', null, RESPONSE_BAD_REQUEST);
-            }
             $updates[] = "password_hash = ?";
             $params[] = Auth::hashPassword($data['password']);
         }

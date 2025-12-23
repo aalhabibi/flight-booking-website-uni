@@ -132,7 +132,6 @@ async function searchFlights(from, to) {
       '<div class="empty-state"><p>Error loading flights</p></div>'
     );
   }
-
 }
 
 function displaySearchResults(flights) {
@@ -216,9 +215,13 @@ function createFlightCard(flight) {
               }">
                 View Details
               </button>
-              <!-- NEW: Message Company button -->
-              <button class="btn btn-secondary btn-sm message-company-btn" 
-                      data-company-id="${flight.company_id || '1'}"
+                    <button class="btn btn-secondary btn-sm message-company-btn" 
+                      data-flight-id="${flight.id}"
+                      data-company-id="${
+                        flight.company_id ||
+                        (flight.company && flight.company.id) ||
+                        ""
+                      }"
                       data-company-name="${flight.company_name}">
                 💬 Message Company
               </button>
@@ -241,9 +244,29 @@ function initBookings() {
   });
 
   // Send message to company
-  $(document).on("click", ".message-company-btn", function () {
-    const companyId = $(this).data("company-id");
-    const companyName = $(this).data("company-name");
+  $(document).on("click", ".message-company-btn", async function () {
+    let companyId = $(this).data("company-id");
+    let companyName = $(this).data("company-name");
+    const flightId = $(this).data("flight-id");
+
+    // If companyId isn't present in the search result, fetch it
+    if (!companyId && flightId) {
+      try {
+        const info = await API.getFlightInfo(flightId);
+        if (info.success && info.data) {
+          companyId =
+            info.data.company_id || (info.data.company && info.data.company.id);
+          companyName = info.data.company_name || companyName;
+        }
+      } catch (e) {
+        console.error("Failed to fetch flight info for messaging:", e);
+      }
+    }
+
+    if (!companyId) {
+      alert("Unable to determine company to message.");
+      return;
+    }
 
     // Switch to messages section
     $('.sidebar-menu li[data-section="messages"]').click();
@@ -554,11 +577,32 @@ function initProfile() {
   $("#profileForm").on("submit", async function (e) {
     e.preventDefault();
 
+    const password = $("#profilePassword").val();
+    const confirmPassword = $("#profileConfirmPassword").val();
+
+    // Validate passwords if provided
+    if (password || confirmPassword) {
+      if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+      if (password.length < 8) {
+        alert("Password must be at least 8 characters");
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.append("name", $("#profileFullName").val());
     formData.append("username", $("#profileUsername").val());
     formData.append("email", $("#profileEmail").val());
     formData.append("tel", $("#profileTel").val());
+
+    // Add password if provided
+    if (password) {
+      formData.append("password", password);
+      formData.append("confirm_password", confirmPassword);
+    }
 
     const photo = $("#profilePhoto")[0].files[0];
     const passport = $("#profilePassport")[0].files[0];
@@ -577,6 +621,10 @@ function initProfile() {
         userData.email = response.data.email;
         Session.setUserData(userData);
         $("#userName").text(userData.name);
+
+        // Clear password fields
+        $("#profilePassword").val("");
+        $("#profileConfirmPassword").val("");
       } else {
         alert(response.message);
       }
@@ -640,18 +688,16 @@ async function loadProfile() {
       $("#profileTel").val(profile.tel);
       $("#profileBalance").text(parseFloat(profile.account_balance).toFixed(2));
 
-      // ✅ Profile photo
       if (profile.photo_path) {
         $("#profileAvatar").html(
           `<img src="${API_CONFIG.BASE_URL}/uploads/${profile.photo_path}" alt="Profile">`
         );
       }
 
-      // ✅ PASSPORT IMAGE - ADD THIS
       if (profile.passport_path || profile.passport_img_path) {
         const passportPath = profile.passport_path || profile.passport_img_path;
         $("#profilePassportPreview").html(
-          `<img src="${API_CONFIG.BASE_URL}/uploads/${passportPath}" alt="Passport" style="max-width: 200px; border: 1px solid #ddd; border-radius: 4px;">`
+          `<img src="${API_CONFIG.BASE_URL}/uploads/${passportPath}" alt="Passport" class="passport-img">`
         );
       }
     }
