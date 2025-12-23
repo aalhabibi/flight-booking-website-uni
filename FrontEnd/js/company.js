@@ -128,6 +128,22 @@ function displayFlights(flights) {
 }
 
 function createCompanyFlightCard(flight) {
+  // Extract origin/destination from itinerary
+  const departureCity =
+    flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : null;
+  const arrivalCity =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].city
+      : null;
+  const departureTime =
+    flight.itinerary && flight.itinerary[0]
+      ? flight.itinerary[0].start_datetime
+      : null;
+  const arrivalTime =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].end_datetime
+      : null;
+
   return $(`
         <div class="flight-card">
             <div class="flight-header">
@@ -135,10 +151,41 @@ function createCompanyFlightCard(flight) {
                     <div class="flight-title">${flight.flight_name}</div>
                     <div class="flight-code">${flight.flight_code}</div>
                 </div>
-                <span class="status-badge status-${flight.status}">${
-    flight.status
-  }</span>
+                <div class="flight-price">${Utils.formatCurrency(
+                  flight.fees
+                )}</div>
             </div>
+            ${
+              departureCity && arrivalCity
+                ? `
+            <div class="flight-route">
+                <div class="route-point">
+                    <div class="route-city">${departureCity}</div>
+                    ${
+                      departureTime
+                        ? `<div class="route-time">${Utils.formatDate(
+                            departureTime
+                          )}</div>`
+                        : ""
+                    }
+                </div>
+                <div class="route-arrow">
+                    <div class="route-line"></div>
+                </div>
+                <div class="route-point">
+                    <div class="route-city">${arrivalCity}</div>
+                    ${
+                      arrivalTime
+                        ? `<div class="route-time">${Utils.formatDate(
+                            arrivalTime
+                          )}</div>`
+                        : ""
+                    }
+                </div>
+            </div>
+            `
+                : ""
+            }
             <div class="flight-info">
                 <div class="info-item">
                     <span class="info-label">Passengers</span>
@@ -147,10 +194,10 @@ function createCompanyFlightCard(flight) {
                     } / ${flight.max_passengers}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Price</span>
-                    <span class="info-value">${Utils.formatCurrency(
-                      flight.fees
-                    )}</span>
+                    <span class="info-label">Status</span>
+                    <span class="status-badge status-${flight.status}">${
+    flight.status
+  }</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Revenue</span>
@@ -365,27 +412,65 @@ function displayAllBookings(flights) {
 }
 
 function createBookingCard(flight, booking) {
-  // ✅ Extract origin/destination from itinerary
-  const origin = flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : 'N/A';
-  const destination = flight.itinerary && flight.itinerary.length > 1 ? 
-    flight.itinerary[flight.itinerary.length - 1].city : 'N/A';
-  
-  // ✅ Use correct passenger name field (name exists, passenger_name doesn't)
-  const passengerName = booking.name || booking.passenger_name || 'Passenger';
-  
-  // ✅ Use itinerary_string if available as fallback
-  const routeDisplay = flight.itinerary_string || `${origin} → ${destination}`;
+  // Extract origin/destination from itinerary
+  const departureCity =
+    flight.itinerary && flight.itinerary[0] ? flight.itinerary[0].city : null;
+  const arrivalCity =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].city
+      : null;
+  const departureTime =
+    flight.itinerary && flight.itinerary[0]
+      ? flight.itinerary[0].start_datetime
+      : null;
+  const arrivalTime =
+    flight.itinerary && flight.itinerary.length > 1
+      ? flight.itinerary[flight.itinerary.length - 1].end_datetime
+      : null;
+
+  // Use correct passenger name field
+  const passengerName = booking.name || booking.passenger_name || "Passenger";
 
   return $(`
     <div class="booking-card">
       <div class="booking-header">
         <div>
-          <!-- ✅ FIXED: Shows "Cairo → Dubai - Passenger" -->
-          <div class="flight-title">${routeDisplay} - ${passengerName}</div>
+          <div class="flight-title">${flight.flight_name}</div>
           <div class="flight-code">${flight.flight_code}</div>
         </div>
-        <span class="status-badge status-${booking.booking_status}">${booking.booking_status}</span>
+        <span class="status-badge status-${booking.booking_status}">${
+    booking.booking_status
+  }</span>
       </div>
+      ${
+        departureCity && arrivalCity
+          ? `
+      <div class="flight-route">
+        <div class="route-point">
+          <div class="route-city">${departureCity}</div>
+          ${
+            departureTime
+              ? `<div class="route-time">${Utils.formatDate(
+                  departureTime
+                )}</div>`
+              : ""
+          }
+        </div>
+        <div class="route-arrow">
+          <div class="route-line"></div>
+        </div>
+        <div class="route-point">
+          <div class="route-city">${arrivalCity}</div>
+          ${
+            arrivalTime
+              ? `<div class="route-time">${Utils.formatDate(arrivalTime)}</div>`
+              : ""
+          }
+        </div>
+      </div>
+      `
+          : ""
+      }
       <div class="booking-info">
         <div class="info-item">
           <span class="info-label">Passenger</span>
@@ -393,15 +478,21 @@ function createBookingCard(flight, booking) {
         </div>
         <div class="info-item">
           <span class="info-label">Booking Date</span>
-          <span class="info-value">${Utils.formatDate(booking.booking_date)}</span>
+          <span class="info-value">${Utils.formatDate(
+            booking.booking_date
+          )}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Amount</span>
-          <span class="info-value">${Utils.formatCurrency(booking.amount_paid)}</span>
+          <span class="info-value">${Utils.formatCurrency(
+            booking.amount_paid
+          )}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Payment</span>
-          <span class="info-value">${booking.payment_method === "account" ? "Account" : "Cash"}</span>
+          <span class="info-value">${
+            booking.payment_method === "account" ? "Account" : "Cash"
+          }</span>
         </div>
       </div>
       <div class="booking-actions">
@@ -414,7 +505,6 @@ function createBookingCard(flight, booking) {
     </div>
   `);
 }
-
 
 function initMessages() {
   // Send message form
@@ -739,7 +829,7 @@ function addItineraryItem(data = null) {
   if (currentCount === 0) {
     // First stop (Departure) - only show departure time
     item.find(".arrival-time-group").hide();
-    item.find('input[name="start_datetime"]').removeAttr('required');
+    item.find('input[name="start_datetime"]').removeAttr("required");
   }
   // All other stops initially show both fields
 
@@ -808,36 +898,36 @@ function updateItineraryNumbers() {
     $(this).find(".itinerary-number").text(label);
   });
   itineraryCount = $("#itineraryItems .itinerary-item").length;
-  
+
   // Update field visibility
   updateItineraryFieldVisibility();
 }
 
 function updateItineraryFieldVisibility() {
   const totalItems = $("#itineraryItems .itinerary-item").length;
-  
+
   $("#itineraryItems .itinerary-item").each(function (index) {
-    const isFirst = (index === 0);
-    const isLast = (index === totalItems - 1);
-    
+    const isFirst = index === 0;
+    const isLast = index === totalItems - 1;
+
     if (isFirst) {
       // First stop - only departure time
       $(this).find(".arrival-time-group").hide();
       $(this).find(".departure-time-group").show();
-      $(this).find('input[name="start_datetime"]').removeAttr('required');
-      $(this).find('input[name="end_datetime"]').attr('required', 'required');
+      $(this).find('input[name="start_datetime"]').removeAttr("required");
+      $(this).find('input[name="end_datetime"]').attr("required", "required");
     } else if (isLast) {
       // Last stop - only arrival time
       $(this).find(".arrival-time-group").show();
       $(this).find(".departure-time-group").hide();
-      $(this).find('input[name="start_datetime"]').attr('required', 'required');
-      $(this).find('input[name="end_datetime"]').removeAttr('required');
+      $(this).find('input[name="start_datetime"]').attr("required", "required");
+      $(this).find('input[name="end_datetime"]').removeAttr("required");
     } else {
       // Middle/layover stops - both times
       $(this).find(".arrival-time-group").show();
       $(this).find(".departure-time-group").show();
-      $(this).find('input[name="start_datetime"]').attr('required', 'required');
-      $(this).find('input[name="end_datetime"]').attr('required', 'required');
+      $(this).find('input[name="start_datetime"]').attr("required", "required");
+      $(this).find('input[name="end_datetime"]').attr("required", "required");
     }
   });
 }
@@ -892,8 +982,8 @@ function collectFlightData() {
     }
 
     // Determine what times we need based on position
-    const isFirstStop = (index === 0);
-    const isLastStop = (index === totalItems - 1);
+    const isFirstStop = index === 0;
+    const isLastStop = index === totalItems - 1;
     const isLayover = !isFirstStop && !isLastStop;
 
     if (isFirstStop) {
@@ -927,7 +1017,7 @@ function collectFlightData() {
 
     // Determine final datetime values to send to backend
     let finalStartDatetime, finalEndDatetime;
-    
+
     if (isFirstStop) {
       // First stop - only departure time, send null for arrival
       finalStartDatetime = null;
@@ -949,7 +1039,9 @@ function collectFlightData() {
       const currArrival = new Date(finalStartDatetime);
 
       if (currArrival < prevDeparture) {
-        alert(`${stopLabel}: Arrival time must be after previous departure time`);
+        alert(
+          `${stopLabel}: Arrival time must be after previous departure time`
+        );
         hasError = true;
         return false;
       }
