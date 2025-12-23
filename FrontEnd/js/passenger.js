@@ -133,22 +133,7 @@ async function searchFlights(from, to) {
     );
   }
 
-<<<<<<< HEAD
   
-=======
-  $(document).on("click", ".message-company-btn", function () {
-    const companyId = $(this).data("company-id");
-    const companyName = $(this).data("company-name");
-
-    // Switch to messages section
-    $('.sidebar-menu li[data-section="messages"]').click();
-
-    // Open conversation with company
-    setTimeout(() => {
-      openConversation(companyId, companyName);
-    }, 300);
-  });
->>>>>>> a47f114af971f573b8259ebcef184ce63a19b80f
 }
 
 function displaySearchResults(flights) {
