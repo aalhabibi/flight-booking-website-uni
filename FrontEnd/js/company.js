@@ -87,6 +87,12 @@ function initFlights() {
     const flightId = $(this).data("flight-id");
     await cancelFlight(flightId);
   });
+
+  // Complete flight
+  $(document).on("click", ".complete-flight-btn", async function () {
+    const flightId = $(this).data("flight-id");
+    await completeFlight(flightId);
+  });
 }
 
 async function loadFlights() {
@@ -230,6 +236,15 @@ function createCompanyFlightCard(flight) {
                 `
                     : ""
                 }
+                ${
+                  flight.status === "pending"
+                    ? `
+                    <button class="btn btn-success btn-sm complete-flight-btn" data-flight-id="${flight.id}">
+                        Complete
+                    </button>
+                `
+                    : ""
+                }
             </div>
         </div>
     `);
@@ -347,6 +362,28 @@ async function cancelFlight(flightId) {
   } catch (error) {
     console.error("Cancel flight error:", error);
     alert("Error cancelling flight");
+  }
+}
+
+async function completeFlight(flightId) {
+  if (
+    !confirm("Are you sure you want to mark this flight as completed?")
+  ) {
+    return;
+  }
+
+  try {
+    const response = await API.updateFlight(flightId, { status: "completed" });
+
+    if (response.success) {
+      alert("Flight completed successfully!");
+      loadFlights();
+    } else {
+      alert(response.message);
+    }
+  } catch (error) {
+    console.error("Complete flight error:", error);
+    alert("Error completing flight");
   }
 }
 
