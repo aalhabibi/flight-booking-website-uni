@@ -109,7 +109,6 @@ function initRegisterForm() {
     const tel = $("#tel").val().trim();
     const password = $("#password").val();
     const confirmPassword = $("#confirm_password").val();
-    const terms = $("#terms").is(":checked");
 
     // Validation
     let hasError = false;
@@ -147,11 +146,6 @@ function initRegisterForm() {
 
     if (password !== confirmPassword) {
       Utils.showFieldError("confirm_password", "Passwords do not match");
-      hasError = true;
-    }
-
-    if (!terms) {
-      Utils.showFieldError("terms", "You must agree to the terms");
       hasError = true;
     }
 
