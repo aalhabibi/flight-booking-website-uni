@@ -154,85 +154,82 @@ function displaySearchResults(flights) {
 function createFlightCard(flight) {
   return $(`
         <div class="flight-card">
-            <div class="flight-header">
-                <div>
-                    <div class="flight-title">${flight.flight_name}</div>
-                    <div class="flight-code">${flight.flight_code}</div>
-                    <div class="info-value">${flight.company_name}</div>
-                </div>
-                <div class="flight-price">${Utils.formatCurrency(
-                  flight.fees
-                )}</div>
-            </div>
-            ${
-              flight.departure_city && flight.arrival_city
-                ? `
-            <div class="flight-route">
-                <div class="route-point">
-                    <div class="route-city">${flight.departure_city}</div>
-                    ${
-                      flight.departure_time
-                        ? `<div class="route-time">${Utils.formatDate(
-                            flight.departure_time
-                          )}</div>`
-                        : ""
-                    }
-                </div>
-                <div class="route-arrow">
-                    <div class="route-line"></div>
-                </div>
-                <div class="route-point">
-                    <div class="route-city">${flight.arrival_city}</div>
-                    ${
-                      flight.arrival_time
-                        ? `<div class="route-time">${Utils.formatDate(
-                            flight.arrival_time
-                          )}</div>`
-                        : ""
-                    }
-                </div>
-            </div>
-            `
-                : ""
-            }
-            <div class="flight-info">
-                <div class="info-item">
-                    <span class="info-label">Available Seats</span>
-                    <span class="info-value">${flight.available_seats} / ${
-    flight.max_passengers
-  }</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Status</span>
-                    <span class="status-badge status-${flight.status}">${
-    flight.status
-  }</span>
-                </div>
-            </div>
-            <div class="flight-actions">
-              <button class="btn btn-outline btn-sm view-flight-btn" data-flight-id="${
+    <div class="flight-header">
+      <div>
+        <div class="flight-title">${flight.flight_name}</div>
+        <div class="flight-code">${flight.flight_code}</div>
+        <div class="info-value">${flight.company_name}</div>
+      </div>
+      <div class="flight-price">${Utils.formatCurrency(
+        flight.fees
+        )}</div>
+    </div>
+    ${
+    flight.departure_city && flight.arrival_city
+    ? `
+    <div class="flight-route">
+      <div class="route-point">
+        <div class="route-city">${flight.departure_city}</div>
+        ${
+        flight.departure_time
+        ? `<div class="route-time">${Utils.formatDate(
+          flight.departure_time
+          )}</div>`
+        : ""
+        }
+      </div>
+      <div class="route-arrow">
+        <div class="route-line"></div>
+      </div>
+      <div class="route-point">
+        <div class="route-city">${flight.arrival_city}</div>
+        ${
+        flight.arrival_time
+        ? `<div class="route-time">${Utils.formatDate(
+          flight.arrival_time
+          )}</div>`
+        : ""
+        }
+      </div>
+    </div>
+    `
+    : ""
+    }
+    <div class="flight-info">
+      <div class="info-item">
+        <span class="info-label">Available Seats</span>
+        <span class="info-value">${flight.available_seats} / ${
+          flight.max_passengers
+          }</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Status</span>
+        <span class="status-badge status-${flight.status}">${
+          flight.status
+          }</span>
+      </div>
+    </div>
+    <div class="flight-actions">
+      <button class="btn btn-outline btn-sm view-flight-btn" data-flight-id="${
                 flight.id
               }">
-                View Details
-              </button>
-                    <button class="btn btn-secondary btn-sm message-company-btn" 
-                      data-flight-id="${flight.id}"
-                      data-company-id="${
+        View Details
+      </button>
+      <button class="btn btn-secondary btn-sm message-company-btn" data-flight-id="${flight.id}" data-company-id="${
                         flight.company_id ||
                         (flight.company && flight.company.id) ||
                         ""
-                      }"
-                      data-company-name="${flight.company_name}">
-                💬 Message Company
-              </button>
-              <button class="btn btn-primary btn-sm book-flight-btn" data-flight-id="${
+                      }" data-company-name="${flight.company_name}">
+        💬 Message Company
+      </button>
+      <button class="btn btn-primary btn-sm book-flight-btn" data-flight-id="${
                 flight.id
               }">
-                Book Flight
-              </button>
-            </div>
+        Book Flight
+      </button>
+    </div>
 
-        </div>
+  </div>
     `);
 }
 
@@ -771,51 +768,92 @@ async function showFlightDetails(flightId) {
 }
 
 function createFlightDetailsHTML(flight) {
-  let itineraryHTML = '<div class="itinerary-route">';
+  const availableSeats = flight.max_passengers - flight.registered_passengers;
+
+  // Create itinerary HTML
+  let itineraryHTML = "";
   if (flight.itinerary && flight.itinerary.length > 0) {
-    flight.itinerary.forEach((stop, index) => {
-      itineraryHTML += `
-                <div class="route-item">
-                    <span class="route-number">${index + 1}</span>
-                    <span class="route-city">${stop.city}</span>
-                    <span class="route-times">
-                        ${Utils.formatDateTime(
-                          stop.start_datetime
-                        )} - ${Utils.formatDateTime(stop.end_datetime)}
-                    </span>
-                </div>
-            `;
-    });
+    const totalStops = flight.itinerary.length;
+    itineraryHTML = flight.itinerary
+      .map((stop, index) => {
+        const isFirst = index === 0;
+        const isLast = index === totalStops - 1;
+
+        let timeHTML = "";
+        if (isFirst) {
+          // First stop (From) - only departure time
+          timeHTML = `<span>Departure: ${Utils.formatDateTime(
+            stop.end_datetime
+          )}</span>`;
+        } else if (isLast) {
+          // Last stop (To) - only arrival time
+          timeHTML = `<span>Arrival: ${Utils.formatDateTime(
+            stop.start_datetime
+          )}</span>`;
+        } else {
+          // Middle stops (layovers) - both times
+          timeHTML = `
+            <span>Arrival: ${Utils.formatDateTime(stop.start_datetime)}</span>
+            <span>Departure: ${Utils.formatDateTime(stop.end_datetime)}</span>
+          `;
+        }
+
+        return `
+      <div class="route-stop-item">
+        <div class="route-stop-number">${index + 1}</div>
+        <div class="route-stop-info">
+          <div class="route-stop-city">${stop.city}</div>
+          <div class="route-stop-time">
+            ${timeHTML}
+          </div>
+        </div>
+      </div>
+    `;
+      })
+      .join("");
   }
-  itineraryHTML += "</div>";
 
   return `
-        <div class="booking-summary">
-            <h3>${flight.flight_name} (${flight.flight_code})</h3>
-            <div class="summary-row">
-                <span>Company:</span>
-                <span>${flight.company_name || "N/A"}</span>
-            </div>
-            <div class="summary-row">
-                <span>Price:</span>
-                <span>${Utils.formatCurrency(flight.fees)}</span>
-            </div>
-            <div class="summary-row">
-                <span>Available Seats:</span>
-                <span>${
-                  flight.max_passengers - flight.registered_passengers
-                } / ${flight.max_passengers}</span>
-            </div>
-            <div class="summary-row">
-                <span>Status:</span>
-                <span class="status-badge status-${flight.status}">${
+    <div class="flight-details-view">
+      <div class="flight-details-header">
+        <div>
+          <h3>${flight.flight_name}</h3>
+          <span class="flight-code">${flight.flight_code}</span>
+        </div>
+        <span class="status-badge status-${flight.status}">${
     flight.status
   }</span>
-            </div>
+      </div>
+
+      <div class="flight-stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Company</span>
+          <span class="stat-value">${flight.company_name || "N/A"}</span>
         </div>
+        <div class="stat-item">
+          <span class="stat-label">Ticket Price</span>
+          <span class="stat-value">${Utils.formatCurrency(flight.fees)}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Available Seats</span>
+          <span class="stat-value">${availableSeats} / ${
+    flight.max_passengers
+  }</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Status</span>
+          <span class="stat-value">${flight.status}</span>
+        </div>
+      </div>
+
+      <div class="details-section">
         <h4>Flight Route</h4>
-        ${itineraryHTML}
-    `;
+        <div class="route-stops">
+          ${itineraryHTML}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function openBookingModal(flightId) {
