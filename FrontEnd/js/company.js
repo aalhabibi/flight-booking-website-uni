@@ -279,21 +279,43 @@ function createFlightDetailsHTML(flight) {
   // Create itinerary HTML
   let itineraryHTML = "";
   if (flight.itinerary && flight.itinerary.length > 0) {
+    const totalStops = flight.itinerary.length;
     itineraryHTML = flight.itinerary
-      .map(
-        (stop, index) => `
+      .map((stop, index) => {
+        const isFirst = index === 0;
+        const isLast = index === totalStops - 1;
+
+        let timeHTML = "";
+        if (isFirst) {
+          // First stop (From) - only departure time
+          timeHTML = `<span>Departure: ${Utils.formatDateTime(
+            stop.end_datetime
+          )}</span>`;
+        } else if (isLast) {
+          // Last stop (To) - only arrival time
+          timeHTML = `<span>Arrival: ${Utils.formatDateTime(
+            stop.start_datetime
+          )}</span>`;
+        } else {
+          // Middle stops (layovers) - both times
+          timeHTML = `
+            <span>Arrival: ${Utils.formatDateTime(stop.start_datetime)}</span>
+            <span>Departure: ${Utils.formatDateTime(stop.end_datetime)}</span>
+          `;
+        }
+
+        return `
       <div class="route-stop-item">
         <div class="route-stop-number">${index + 1}</div>
         <div class="route-stop-info">
           <div class="route-stop-city">${stop.city}</div>
           <div class="route-stop-time">
-            <span>Arrival: ${Utils.formatDateTime(stop.start_datetime)}</span>
-            <span>Departure: ${Utils.formatDateTime(stop.end_datetime)}</span>
+            ${timeHTML}
           </div>
         </div>
       </div>
-    `
-      )
+    `;
+      })
       .join("");
   }
 
@@ -822,9 +844,9 @@ async function loadProfile() {
 }
 
 function initModals() {
-  // Add itinerary button
+  // Add itinerary button - inserts a layover stop BEFORE the arrival
   $(document).on("click", "#addItineraryBtn", function () {
-    addItineraryItem();
+    addItineraryItem(null, true); // true = insert as layover (before last)
   });
 
   // Remove itinerary item
@@ -914,7 +936,7 @@ function openFlightModal(flight = null) {
   Utils.openModal("flightModal");
 }
 
-function addItineraryItem(data = null) {
+function addItineraryItem(data = null, insertAsLayover = false) {
   itineraryCount++;
   const template = $("#itineraryTemplate").html();
   const item = $(template);
@@ -924,9 +946,10 @@ function addItineraryItem(data = null) {
   let label;
   if (currentCount === 0) {
     label = "From (Departure)";
-  } else if (currentCount === 1) {
+  } else if (currentCount === 1 && !insertAsLayover) {
     label = "To (Arrival)";
   } else {
+    // Will be updated by updateItineraryNumbers() after insertion
     label = `Stop ${currentCount - 1} (Layover)`;
   }
 
@@ -951,9 +974,16 @@ function addItineraryItem(data = null) {
       .val(formatDateTimeForInput(data.end_datetime));
   }
 
-  $("#itineraryItems").append(item);
+  // If inserting as layover, insert BEFORE the last item (arrival)
+  if (insertAsLayover && currentCount >= 2) {
+    const lastItem = $("#itineraryItems .itinerary-item").last();
+    item.insertBefore(lastItem);
+  } else {
+    $("#itineraryItems").append(item);
+  }
 
-  // After adding, update all items to ensure the last one is set correctly
+  // After adding, update all items to ensure labels and visibility are correct
+  updateItineraryNumbers();
   updateItineraryFieldVisibility();
 
   // Add jQuery UI autocomplete to the newly added city field
@@ -994,18 +1024,22 @@ function addItineraryItem(data = null) {
 }
 
 function updateItineraryNumbers() {
+  const totalItems = $("#itineraryItems .itinerary-item").length;
+  let layoverIndex = 1;
+
   $("#itineraryItems .itinerary-item").each(function (index) {
     let label;
     if (index === 0) {
       label = "From (Departure)";
-    } else if (index === 1) {
+    } else if (index === totalItems - 1) {
       label = "To (Arrival)";
     } else {
-      label = `Stop ${index - 1} (Layover)`;
+      label = `Stop ${layoverIndex} (Layover)`;
+      layoverIndex++;
     }
     $(this).find(".itinerary-number").text(label);
   });
-  itineraryCount = $("#itineraryItems .itinerary-item").length;
+  itineraryCount = totalItems;
 
   // Update field visibility
   updateItineraryFieldVisibility();
