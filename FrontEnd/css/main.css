@@ -571,11 +571,13 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg,
-      #0f172a 0%,
-      #1e3a8a 40%,
-      #0066cc 70%,
-      #00b4d8 100%);
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1e3a8a 40%,
+    #0066cc 70%,
+    #00b4d8 100%
+  );
   z-index: -1;
 }
 
@@ -586,15 +588,21 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle at 20% 50%,
+  background-image: radial-gradient(
+      circle at 20% 50%,
       rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%),
-    radial-gradient(circle at 80% 80%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
       rgba(0, 180, 216, 0.15) 0%,
-      transparent 50%),
-    radial-gradient(circle at 40% 20%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 20%,
       rgba(255, 107, 53, 0.1) 0%,
-      transparent 40%);
+      transparent 40%
+    );
 }
 
 .hero-background::after {
@@ -604,9 +612,11 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: linear-gradient(90deg,
+  background-image: linear-gradient(
+      90deg,
       rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px),
+      transparent 1px
+    ),
     linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   opacity: 0.5;
@@ -692,11 +702,13 @@ p {
    =================================== */
 
 .auth-page {
-  background: linear-gradient(135deg,
-      #0f172a 0%,
-      #1e3a8a 40%,
-      #0066cc 70%,
-      #00b4d8 100%);
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1e3a8a 40%,
+    #0066cc 70%,
+    #00b4d8 100%
+  );
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -710,12 +722,16 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle at 20% 50%,
+  background-image: radial-gradient(
+      circle at 20% 50%,
       rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%),
-    radial-gradient(circle at 80% 80%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
       rgba(0, 180, 216, 0.15) 0%,
-      transparent 50%);
+      transparent 50%
+    );
   pointer-events: none;
 }
 
@@ -1884,7 +1900,7 @@ textarea.form-control {
 }
 
 .modal-large .modal-content {
-  max-width: 900px;
+  max-width: 1200px;
 }
 
 .modal-header {
@@ -2004,22 +2020,87 @@ textarea.form-control {
   color: var(--white);
 }
 
-.itinerary-route {
-  margin-top: var(--spacing-lg);
+/* ===================================
+   Flight Details View - Simple & Clean
+   =================================== */
+
+.flight-details-view {
+  max-width: 100%;
 }
 
-.route-item {
+.flight-details-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md);
-  background-color: var(--gray-50);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 2px solid var(--gray-200);
 }
 
-.route-number {
-  width: 30px;
-  height: 30px;
+.flight-details-header h3 {
+  font-size: 1.5rem;
+  color: var(--gray-900);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.flight-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.stat-item {
+  background-color: var(--gray-50);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin-bottom: var(--spacing-xs);
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.details-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.details-section h4 {
+  font-size: 1.125rem;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--primary-blue);
+}
+
+.route-stops {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.route-stop-item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--gray-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.route-stop-number {
+  width: 36px;
+  height: 36px;
   background-color: var(--primary-blue);
   color: var(--white);
   border-radius: var(--radius-full);
@@ -2027,43 +2108,93 @@ textarea.form-control {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  margin-right: var(--spacing-md);
+  flex-shrink: 0;
 }
 
-.route-city {
-  font-weight: 600;
+.route-stop-info {
   flex: 1;
 }
 
-.route-times {
+.route-stop-city {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.route-stop-time {
+  display: flex;
+  gap: var(--spacing-lg);
   font-size: 0.875rem;
   color: var(--gray-600);
 }
 
-/* ===================================
-   Booking Summary
-   =================================== */
+.passengers-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
 
-.booking-summary {
+.passenger-item {
+  display: flex;
+  gap: var(--spacing-md);
   padding: var(--spacing-lg);
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+}
+
+.passenger-number {
+  width: 32px;
+  height: 32px;
+  background-color: var(--gray-200);
+  color: var(--gray-700);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.passenger-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.passenger-name {
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.passenger-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.875rem;
+  color: var(--gray-600);
+}
+
+.passenger-meta span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.passenger-amount {
+  font-weight: 600;
+  color: var(--primary-blue);
+}
+
+.empty-message {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--gray-500);
   background-color: var(--gray-50);
   border-radius: var(--radius-lg);
-  margin-bottom: var(--spacing-lg);
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--primary-blue);
-  padding-top: var(--spacing-md);
+  border: 1px dashed var(--gray-300);
 }
 
 /* ===================================
@@ -2239,7 +2370,6 @@ textarea.form-control {
   }
 
   @keyframes fly {
-
     0%,
     100% {
       transform: rotate(0deg) translateY(0);

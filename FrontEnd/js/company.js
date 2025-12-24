@@ -270,61 +270,109 @@ async function viewFlightDetails(flightId) {
 }
 
 function createFlightDetailsHTML(flight) {
-  let itineraryHTML = '<div class="itinerary-route">';
+  const registeredCount = flight.registered_passengers
+    ? flight.registered_passengers.length
+    : 0;
+  const availableSeats = flight.max_passengers - registeredCount;
+  const revenue = registeredCount * flight.fees;
+
+  // Create itinerary HTML
+  let itineraryHTML = "";
   if (flight.itinerary && flight.itinerary.length > 0) {
-    flight.itinerary.forEach((stop, index) => {
-      itineraryHTML += `
-                <div class="route-item">
-                    <span class="route-number">${index + 1}</span>
-                    <span class="route-city">${stop.city}</span>
-                    <span class="route-times">
-                        ${Utils.formatDateTime(
-                          stop.start_datetime
-                        )} - ${Utils.formatDateTime(stop.end_datetime)}
-                    </span>
-                </div>
-            `;
-    });
+    itineraryHTML = flight.itinerary
+      .map(
+        (stop, index) => `
+      <div class="route-stop-item">
+        <div class="route-stop-number">${index + 1}</div>
+        <div class="route-stop-info">
+          <div class="route-stop-city">${stop.city}</div>
+          <div class="route-stop-time">
+            <span>Arrival: ${Utils.formatDateTime(stop.start_datetime)}</span>
+            <span>Departure: ${Utils.formatDateTime(stop.end_datetime)}</span>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("");
   }
-  itineraryHTML += "</div>";
+
+  // Create passengers list HTML
+  let passengersHTML = "";
+  if (flight.registered_passengers && flight.registered_passengers.length > 0) {
+    passengersHTML = flight.registered_passengers
+      .map(
+        (passenger, index) => `
+      <div class="passenger-item">
+        <div class="passenger-number">${index + 1}</div>
+        <div class="passenger-details">
+          <div class="passenger-name">${passenger.name}</div>
+          <div class="passenger-meta">
+            <span>${passenger.email}</span>
+            <span>${passenger.tel || "N/A"}</span>
+            <span>Booked: ${Utils.formatDate(passenger.booking_date)}</span>
+            <span class="passenger-amount">${Utils.formatCurrency(
+              passenger.amount_paid
+            )}</span>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+  } else {
+    passengersHTML =
+      '<div class="empty-message">No passengers registered yet</div>';
+  }
 
   return `
-        <div class="booking-summary">
-            <h3>${flight.flight_name} (${flight.flight_code})</h3>
-            <div class="summary-row">
-                <span>Price:</span>
-                <span>${Utils.formatCurrency(flight.fees)}</span>
-            </div>
-            <div class="summary-row">
-                <span>Max Passengers:</span>
-                <span>${flight.max_passengers}</span>
-            </div>
-            <div class="summary-row">
-                <span>Registered:</span>
-                <span>${flight.registered_passengers.length}</span>
-            </div>
-            <div class="summary-row">
-                <span>Available:</span>
-                <span>${
-                  flight.max_passengers - flight.registered_passengers.length
-                }</span>
-            </div>
-            <div class="summary-row">
-                <span>Status:</span>
-                <span class="status-badge status-${flight.status}">${
+    <div class="flight-details-view">
+      <div class="flight-details-header">
+        <div>
+          <h3>${flight.flight_name}</h3>
+          <span class="flight-code">${flight.flight_code}</span>
+        </div>
+        <span class="status-badge status-${flight.status}">${
     flight.status
   }</span>
-            </div>
-            <div class="summary-row">
-                <span>Total Revenue:</span>
-                <span>${Utils.formatCurrency(
-                  flight.registered_passengers.length * flight.fees
-                )}</span>
-            </div>
+      </div>
+
+      <div class="flight-stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Ticket Price</span>
+          <span class="stat-value">${Utils.formatCurrency(flight.fees)}</span>
         </div>
+        <div class="stat-item">
+          <span class="stat-label">Passengers</span>
+          <span class="stat-value">${registeredCount} / ${
+    flight.max_passengers
+  }</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Available Seats</span>
+          <span class="stat-value">${availableSeats}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total Revenue</span>
+          <span class="stat-value">${Utils.formatCurrency(revenue)}</span>
+        </div>
+      </div>
+
+      <div class="details-section">
         <h4>Flight Route</h4>
-        ${itineraryHTML}
-    `;
+        <div class="route-stops">
+          ${itineraryHTML}
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h4>Registered Passengers (${registeredCount})</h4>
+        <div class="passengers-list">
+          ${passengersHTML}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function editFlight(flightId) {
@@ -366,9 +414,7 @@ async function cancelFlight(flightId) {
 }
 
 async function completeFlight(flightId) {
-  if (
-    !confirm("Are you sure you want to mark this flight as completed?")
-  ) {
+  if (!confirm("Are you sure you want to mark this flight as completed?")) {
     return;
   }
 
